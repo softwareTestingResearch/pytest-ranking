@@ -12,7 +12,7 @@ pytest-tcp
    :target: https://results.pre-commit.ci/latest/github/pre-commit/pre-commit/main
 
 
-Pytest plugin for test-case prioritization.
+A Pytest plugin for test-case prioritization.
 
 This `pytest`_ plugin allows you to find failures faster and receive sooner debugging feedback from CI.
 It does so by prioritizing running tests that have shorter execution time and/or recently failed.
@@ -21,19 +21,22 @@ It does so by prioritizing running tests that have shorter execution time and/or
 Installation
 ============
 
-You can install "pytest-tcp" via `pip`_ from `PyPI`_
+To install "pytest-tcp" via `pip`_ from `PyPI`_:
 
 .. code-block:: bash
 
     pip install pytest-tcp
 
 
+To install pytest-rerunfailures:
+
+
 Usage
 =====
 
 Pytest will automatically find the plugin and use it when you run ``pytest``.
-You can use the default prioritization heuristic
-(run tests that have shorter execution time first)
+You can use the default prioritization heuristic,
+which runs tests that have shorter execution time first
 by passing the ``--tcp`` option:
 
 .. code-block:: bash
@@ -41,14 +44,11 @@ by passing the ``--tcp`` option:
     pytest --tcp
 
 The terminal output will tell you the current configurations
-and runtime overhead of this plugin:
-
-.. codeblock:: bash
+and runtime overhead of this plugin::
 
     Using TCP weights 1-0
     Collect TCP features took 0.0029001235961914062s.
     Compute TCP order took 0.0002548694610595703s.
-
 
 You can configure the weights of different prioritization heuristics
 by additionally passing the ```--tcp-weight`` flag with formatted values:
@@ -67,8 +67,7 @@ The default value is ``1-0``, meaning it entirely favors running faster tests.
 
 
 You can make these options always apply by adding them to the ``addopts`` setting in your
-``pytest.ini`` (or `other configuration
-file <https://docs.pytest.org/en/latest/reference/customize.html#configuration>`__):
+`pytest.ini <https://docs.pytest.org/en/latest/reference/customize.html#configuration>`_:
 
 .. code-block:: ini
 
