@@ -11,16 +11,15 @@ pytest-tcp
 .. image:: https://results.pre-commit.ci/badge/github/pre-commit/pre-commit/main.svg
    :target: https://results.pre-commit.ci/latest/github/pre-commit/pre-commit/main
 
-Pytest plugin for test-case prioritization
 
-----
+Pytest plugin for test-case prioritization.
 
 This `pytest`_ plugin allows you to find failures faster and receive sooner debugging feedback from CI.
 It does so by prioritizing running tests that have shorter execution time and/or recently failed.
 
 
 Installation
-------------
+============
 
 You can install "pytest-tcp" via `pip`_ from `PyPI`_
 
@@ -30,7 +29,7 @@ You can install "pytest-tcp" via `pip`_ from `PyPI`_
 
 
 Usage
------
+=====
 
 Pytest will automatically find the plugin and use it when you run ``pytest``.
 You can use the default prioritization heuristic
@@ -78,18 +77,19 @@ file <https://docs.pytest.org/en/latest/reference/customize.html#configuration>`
 
 
 Contributing
-------------
+============
+
 Contributions are very welcome. Tests can be run with `tox`_, please ensure
 the coverage at least stays the same before you submit a pull request.
 
 License
--------
+=======
 
 Distributed under the terms of the `MIT`_ license, "pytest-tcp" is free and open source software
 
 
 Issues
-------
+======
 
 If you encounter any problems, please `file an issue`_ along with a detailed description.
 
