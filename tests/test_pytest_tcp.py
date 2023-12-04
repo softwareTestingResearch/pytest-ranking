@@ -1,10 +1,6 @@
-# -*- coding: utf-8 -*-
-
-
 from __future__ import annotations
 
 import pytest
-
 
 test_method_one = \
     """
@@ -148,12 +144,12 @@ def test_recent_fail_first(mytester):
     # assert faster tests are run first
     out.stdout.fnmatch_lines(
         [
-        "test_method_one.py::test_fast_fail FAILED",
-        "test_class_one.py::TestClassSample::test_slow_fail FAILED",
-        "test_method_one.py::test_slow PASSED",
-        "test_method_one.py::test_medium PASSED",
-        "test_class_one.py::TestClassSample::test_medium PASSED",
-        "test_class_one.py::TestClassSample::test_fast PASSED",
+            "test_method_one.py::test_fast_fail FAILED",
+            "test_class_one.py::TestClassSample::test_slow_fail FAILED",
+            "test_method_one.py::test_slow PASSED",
+            "test_method_one.py::test_medium PASSED",
+            "test_class_one.py::TestClassSample::test_medium PASSED",
+            "test_class_one.py::TestClassSample::test_fast PASSED",
          ],
         consecutive=True
     )
@@ -203,18 +199,20 @@ def test_logging(mytester):
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=2, failed=1)
     # should only log feature computation time
-    assert len([x for x in out.outlines if x.startswith("Using TCP weights")]) == 0
-    assert len([x for x in out.outlines if x.startswith("Collecting TCP features took")]) == 0
-    assert len([x for x in out.outlines if x.startswith("Computing TCP order took")]) == 0
+    logging_strings = (
+        "Using TCP weights",
+        "Collect TCP features took",
+        "Compute TCP order took"
+    )
+
+    assert len([x for x in out.outlines if x.startswith(logging_strings)]) == 0
 
     # run with tcp
     args = ["-v", "--tcp"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=2, failed=1)
     # should log feature computation time and tcp ordering time
-    assert len([x for x in out.outlines if x.startswith("Using TCP weights")]) == 1
-    assert len([x for x in out.outlines if x.startswith("Collecting TCP features took")]) == 1
-    assert len([x for x in out.outlines if x.startswith("Computing TCP order took")]) == 1
+    assert len([x for x in out.outlines if x.startswith(logging_strings)]) == 3
 
 
 def test_invalid_weight(mytester):
@@ -224,5 +222,6 @@ def test_invalid_weight(mytester):
     # run without tcp
     args = ["-v", "--tcp", "--tcp-weight=1-3"]
     out = mytester.runpytest(*args)
-    error_msg = "pytest: error: argument --tcp-weight: Cannot parse input for `--tcp-weight`."
+    error_msg = "pytest: error: argument --tcp-weight:" \
+        + " Cannot parse input for `--tcp-weight`."
     assert len([x for x in out.errlines if x.startswith(error_msg)]) == 1

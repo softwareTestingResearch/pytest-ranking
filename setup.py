@@ -1,9 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
-import os
 import codecs
-from setuptools import setup
+import os
+from glob import glob
+from os.path import basename, splitext
+
+from setuptools import find_packages, setup
 
 
 def read(fname):
@@ -13,16 +15,18 @@ def read(fname):
 
 setup(
     name='pytest-tcp',
-    version='1.0.0',
-    author='Max',
+    version='0.1.0',
+    author='softwareTestingResearch',
     author_email='testingresearch4all@gmail.com',
-    maintainer='Max',
+    maintainer='softwareTestingResearch',
     maintainer_email='testingresearch4all@gmail.com',
     license='MIT',
     url='https://github.com/softwareTestingResearch/pytest-tcp',
     description='A Pytest plugin for test prioritization',
     long_description=read('README.rst'),
-    py_modules=['pytest_tcp'],
+    packages=find_packages('src'),
+    package_dir={'': 'src'},
+    py_modules=[splitext(basename(path))[0] for path in glob('src/*.py')],
     python_requires='>=3.5',
     install_requires=[
         'pytest>=7.4.3',
@@ -45,9 +49,17 @@ setup(
         'Operating System :: OS Independent',
         'License :: OSI Approved :: MIT License',
     ],
+    keywords=[
+        'pytest',
+        'py.test',
+        'test prioritization',
+        'test order',
+        'test ordering',
+        'test ranking'
+    ],
     entry_points={
         'pytest11': [
-            'tcp = pytest_tcp',
+            'pytest_tcp = pytest_tcp.plugin',
         ],
     },
 )
