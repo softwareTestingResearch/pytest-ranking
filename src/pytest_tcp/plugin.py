@@ -39,12 +39,12 @@ def pytest_addoption(parser: Parser) -> None:
         action="store",
         type=tcp_weight_type,
         default=DEFAULT_WEIGHT,
-        help="""Weights to different TCP heuristics, seperated by hyphens `-`.
+        help="""Weights to different TCP heuristics, separated by hyphens `-`.
                 The 1st weight (w1) is for running faster tests,
                 the 2nd weight (w2) is for running recently failed tests.
                 The sum of all weights must equal to 1.
                 A higher weight means that TCP heuristic is favored.
-                Input format: `w2-w2`. Default value: 1-0, meaning it
+                Input format: `w1-w2`. Default value: 1-0, meaning it
                 entirely favors running faster tests.""",
     )
 

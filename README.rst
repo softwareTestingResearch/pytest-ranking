@@ -2,35 +2,24 @@
 pytest-tcp
 ==========
 
-.. image:: https://img.shields.io/pypi/v/pytest-tcp.svg
-    :target: https://pypi.org/project/pytest-tcp
+.. image:: https://github.com/softwareTestingResearch/pytest-tcp/workflows/ci/badge.svg
+    :target: https://github.com/softwareTestingResearch/pytest-tcp/actions?workflow=ci
     :alt: PyPI version
 
 .. image:: https://img.shields.io/pypi/pyversions/pytest-tcp.svg
     :target: https://pypi.org/project/pytest-tcp
     :alt: Python versions
 
-.. image:: https://ci.appveyor.com/api/projects/status/github/softwareTestingResearch/pytest-tcp?branch=master
-    :target: https://ci.appveyor.com/project/softwareTestingResearch/pytest-tcp/branch/master
-    :alt: See Build Status on AppVeyor
+.. image:: https://results.pre-commit.ci/badge/github/pre-commit/pre-commit/main.svg
+   :target: https://results.pre-commit.ci/latest/github/pre-commit/pre-commit/main
+   :alt: pre-commit.ci status
 
-A Pytest plugin for test prioritization
+Pytest plugin for test-case prioritization
 
 ----
 
-This `pytest`_ plugin was generated with `Cookiecutter`_ along with `@hackebrot`_'s `cookiecutter-pytest-plugin`_ template.
-
-
-Features
---------
-
-* TODO
-
-
-Requirements
-------------
-
-* TODO
+This `pytest`_ plugin allows you to find failures faster and receive sooner debugging feedback from CI.
+It does so by prioritizing running tests that have shorter execution time and/or recently failed.
 
 
 Installation
@@ -44,7 +33,49 @@ You can install "pytest-tcp" via `pip`_ from `PyPI`_::
 Usage
 -----
 
-* TODO
+Pytest will automatically find the plugin and use it when you run ``pytest``.
+You can use the default prioritization heuristic (run faster tests first)
+by passing the ``--tcp`` option:
+
+.. code-block:: bash
+
+    pytest --tcp
+
+The terminal output will tell you the current configurations
+and runtime overhead of this plugin:
+
+.. codeblock:: bash
+
+    Using TCP weights ...
+    Collect TCP features took ...
+    Compute TCP order took ...
+
+
+You can configure the weights of different prioritization heuristics used
+for this plugin by additionally passing the ```--tcp-weight`` flag with formatted values:
+
+.. code-block:: bash
+
+    pytest --tcp --tcp-weight=0-1
+
+
+Weights are separated by hyphens ``-``, in format ``w1-w2``.
+The 1st weight (``w1``) is for running faster tests,
+the 2nd weight (``w2``) is for running recently failed tests.
+The sum of all weights must equal to 1.
+A higher weight means that a corresponding heuristic is favored.
+The default value is ``1-0``, meaning it entirely favors running faster tests.
+
+
+You can make these options always apply by adding them to the ``addopts`` setting in your
+``pytest.ini`` (or `other configuration
+file <https://docs.pytest.org/en/latest/reference/customize.html#configuration>`__):
+
+.. code-block:: ini
+
+    [pytest]
+    addopts = --tcp --tcp-weight=0.5-0.5
+
 
 Contributing
 ------------
@@ -61,16 +92,3 @@ Issues
 ------
 
 If you encounter any problems, please `file an issue`_ along with a detailed description.
-
-.. _`Cookiecutter`: https://github.com/audreyr/cookiecutter
-.. _`@hackebrot`: https://github.com/hackebrot
-.. _`MIT`: http://opensource.org/licenses/MIT
-.. _`BSD-3`: http://opensource.org/licenses/BSD-3-Clause
-.. _`GNU GPL v3.0`: http://www.gnu.org/licenses/gpl-3.0.txt
-.. _`Apache Software License 2.0`: http://www.apache.org/licenses/LICENSE-2.0
-.. _`cookiecutter-pytest-plugin`: https://github.com/pytest-dev/cookiecutter-pytest-plugin
-.. _`file an issue`: https://github.com/softwareTestingResearch/pytest-tcp/issues
-.. _`pytest`: https://github.com/pytest-dev/pytest
-.. _`tox`: https://tox.readthedocs.io/en/latest/
-.. _`pip`: https://pypi.org/project/pip/
-.. _`PyPI`: https://pypi.org/project
