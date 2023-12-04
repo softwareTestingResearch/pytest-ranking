@@ -49,9 +49,9 @@ and runtime overhead of this plugin:
 
 .. codeblock:: bash
 
-    Using TCP weights ...
-    Collect TCP features took ...
-    Compute TCP order took ...
+    Using TCP weights 1-0
+    Collect TCP features took 0.0029001235961914062s.
+    Compute TCP order took 0.0002548694610595703s.
 
 
 You can configure the weights of different prioritization heuristics
