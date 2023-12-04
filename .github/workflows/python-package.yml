@@ -34,4 +34,4 @@ jobs:
     - name: Run tox
       # Run tox using the version of Python in `PATH`
       run: |
-        tox run -e py$(echo ${{ matrix.python-version }}
+        tox run -e py$(echo ${{ matrix.python-version }})
