@@ -2,13 +2,13 @@
 pytest-tcp
 ==========
 
-.. image:: https://github.com/softwareTestingResearch/pytest-tcp/workflows/ci/badge.svg
-    :target: https://github.com/softwareTestingResearch/pytest-tcp/actions?workflow=ci
-    :alt: PyPI version
+.. image:: https://github.com/softwareTestingResearch/pytest-tcp/workflows/CI/badge.svg
+    :target: https://github.com/softwareTestingResearch/pytest-tcp/actions?workflow=CI
+    :alt: Build status
 
 .. image:: https://img.shields.io/pypi/pyversions/pytest-tcp.svg
     :target: https://pypi.org/project/pytest-tcp
-    :alt: Python versions
+    :alt: PyPI versions
 
 .. image:: https://results.pre-commit.ci/badge/github/pre-commit/pre-commit/main.svg
    :target: https://results.pre-commit.ci/latest/github/pre-commit/pre-commit/main
