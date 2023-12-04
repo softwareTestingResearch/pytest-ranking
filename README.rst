@@ -25,16 +25,19 @@ It does so by prioritizing running tests that have shorter execution time and/or
 Installation
 ------------
 
-You can install "pytest-tcp" via `pip`_ from `PyPI`_::
+You can install "pytest-tcp" via `pip`_ from `PyPI`_
 
-    $ pip install pytest-tcp
+.. code-block:: bash
+
+    pip install pytest-tcp
 
 
 Usage
 -----
 
 Pytest will automatically find the plugin and use it when you run ``pytest``.
-You can use the default prioritization heuristic (run faster tests first)
+You can use the default prioritization heuristic
+(run tests that have shorter execution time first)
 by passing the ``--tcp`` option:
 
 .. code-block:: bash
@@ -51,17 +54,17 @@ and runtime overhead of this plugin:
     Compute TCP order took ...
 
 
-You can configure the weights of different prioritization heuristics used
-for this plugin by additionally passing the ```--tcp-weight`` flag with formatted values:
+You can configure the weights of different prioritization heuristics
+ by additionally passing the ```--tcp-weight`` flag with formatted values:
 
 .. code-block:: bash
 
     pytest --tcp --tcp-weight=0-1
 
 
-Weights are separated by hyphens ``-``, in format ``w1-w2``.
-The 1st weight (``w1``) is for running faster tests,
-the 2nd weight (``w2``) is for running recently failed tests.
+Weights are separated by hyphens ``-``.
+The 1st weight is for running faster tests,
+the 2nd weight is for running recently failed tests.
 The sum of all weights must equal to 1.
 A higher weight means that a corresponding heuristic is favored.
 The default value is ``1-0``, meaning it entirely favors running faster tests.
@@ -92,3 +95,11 @@ Issues
 ------
 
 If you encounter any problems, please `file an issue`_ along with a detailed description.
+
+
+.. _`MIT`: http://opensource.org/licenses/MIT
+.. _`file an issue`: https://github.com/softwareTestingResearch/pytest-tcp/issues
+.. _`pytest`: https://github.com/pytest-dev/pytest
+.. _`tox`: https://tox.readthedocs.io/en/latest/
+.. _`pip`: https://pypi.org/project/pip/
+.. _`PyPI`: https://pypi.org/project
