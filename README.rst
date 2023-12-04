@@ -55,7 +55,7 @@ and runtime overhead of this plugin:
 
 
 You can configure the weights of different prioritization heuristics
- by additionally passing the ```--tcp-weight`` flag with formatted values:
+by additionally passing the ```--tcp-weight`` flag with formatted values:
 
 .. code-block:: bash
 
