@@ -1,0 +1,10 @@
+site_name: pytest-tcp
+site_description: A Pytest plugin for test prioritization
+site_author: M1
+
+theme: readthedocs
+
+repo_url: https://github.com/softwareTestingResearch/pytest-tcp
+
+pages:
+- Home: index.md
