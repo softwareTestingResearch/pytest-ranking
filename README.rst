@@ -8,8 +8,9 @@ pytest-tcp
 .. image:: https://img.shields.io/pypi/pyversions/pytest-tcp.svg
     :target: https://pypi.org/project/pytest-tcp
 
-.. image:: https://results.pre-commit.ci/badge/github/pre-commit/pre-commit/main.svg
-   :target: https://results.pre-commit.ci/latest/github/pre-commit/pre-commit/main
+.. image:: https://results.pre-commit.ci/badge/github/softwareTestingResearch/pytest-tcp/main.svg
+   :target: https://results.pre-commit.ci/latest/github/softwareTestingResearch/pytest-tcp/main
+   :alt: pre-commit.ci status
 
 
 A Pytest plugin for test-case prioritization.
@@ -78,8 +79,8 @@ You can make these options always apply by adding them to the ``addopts`` settin
 Contributing
 ============
 
-Contributions are very welcome. Tests can be run with `tox`_, please ensure
-the coverage at least stays the same before you submit a pull request.
+Contributions are very welcome. Tests can be run with `tox`_.
+.. , please ensure the coverage at least stays the same before you submit a pull request.
 
 License
 =======

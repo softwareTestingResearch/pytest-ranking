@@ -171,7 +171,6 @@ class TCPRunner:
 def compute_test_features(
         config: Config,
         test_reports: list[TestReport]) -> None:
-    # TODO: unify the feature collection function
     # Get the duration of the each test's most recent execution
     key = os.path.join(TCP_DATA_DIR, "last_durations")
     last_durations = config.cache.get(key, {})
