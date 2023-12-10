@@ -29,9 +29,6 @@ To install "pytest-tcp" via `pip`_ from `PyPI`_:
     pip install pytest-tcp
 
 
-To install pytest-rerunfailures:
-
-
 Usage
 =====
 
