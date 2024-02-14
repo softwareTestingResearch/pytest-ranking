@@ -33,16 +33,16 @@ test_class_one = \
 
     class TestClassSample:
         def test_fast(self):
-            time.sleep(0.5)
+            time.sleep(0.7)
             assert func(4) == 5
 
         # FAIL
         def test_slow_fail(self):
-            time.sleep(1.5)
+            time.sleep(1.7)
             assert func(3) == 5
 
         def test_medium(self):
-            time.sleep(1)
+            time.sleep(1.2)
             assert func(4) == 5
     """
 

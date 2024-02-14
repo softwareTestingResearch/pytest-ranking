@@ -137,7 +137,7 @@ class TCPRunner:
             # called: only look at called duration (ignore setup/teardown)
             self.test_reports.append(report)
 
-    @pytest.hookimpl(tryfirst=True)
+    @pytest.hookimpl(trylast=True)
     def pytest_collection_modifyitems(self, items: list[Item]) -> None:
         if self.config.getoption("--tcp"):
             self.run_tcp(items)

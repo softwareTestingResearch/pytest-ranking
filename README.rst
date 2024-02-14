@@ -73,6 +73,13 @@ You can make these options always apply by adding them to the ``addopts`` settin
     addopts = --tcp --tcp-weight=0.5-0.5
 
 
+Warning
+-------
+
+Because "pytest-tcp" re-orders tests to speed up failure detection time,
+please disable other pytest plugins for test ordering, e.g., `pytest-randomly <https://github.com/pytest-dev/pytest-randomly>`_, `pytest-random-order <https://github.com/pytest-dev/pytest-random-order>`_.
+
+
 Contributing
 ============
 
