@@ -23,7 +23,7 @@ setup(
     license='MIT',
     url='https://github.com/softwareTestingResearch/pytest-tcp',
     description='A Pytest plugin for test prioritization',
-    long_description=read('README.rst'),
+    long_description=read('README.md'),
     packages=find_packages('src'),
     package_dir={'': 'src'},
     py_modules=[splitext(basename(path))[0] for path in glob('src/*.py')],
