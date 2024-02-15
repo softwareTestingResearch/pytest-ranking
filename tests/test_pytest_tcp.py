@@ -200,9 +200,9 @@ def test_logging(mytester):
     out.assert_outcomes(passed=2, failed=1)
     # should only log feature computation time
     logging_strings = (
-        "Using TCP weights",
-        "Collect TCP features took",
-        "Compute TCP order took"
+        "Test-Prioritization: weights",
+        "Test-Prioritization: feature collection",
+        "Test-Prioritization: order computation"
     )
 
     assert len([x for x in out.outlines if x.startswith(logging_strings)]) == 0
