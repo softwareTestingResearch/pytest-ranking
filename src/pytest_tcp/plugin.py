@@ -10,16 +10,10 @@ from _pytest.config import Config
 from _pytest.config.argparsing import Parser
 from _pytest.main import Session
 from _pytest.nodes import Item
+from _pytest.python import Function
 from _pytest.reports import TestReport
-
-TCP_DATA_DIR = "tcp_data"
-TCP_LOG_DIR = "tcp_log"
-TEST_HISTORY_CACHE = "test_history"
-
-
-# Default amount of historical test run results to store per test
-DEFAULT_HIST_LEN = 10
-DEFAULT_WEIGHT = "1-0"
+from dep_tracker import depTracker
+from plugin_utils import DEFAULT_HIST_LEN, DEFAULT_WEIGHT, TCP_DATA_DIR
 
 
 def pytest_addoption(parser: Parser) -> None:
@@ -86,6 +80,9 @@ class TCPRunner:
     def __init__(self, config: Config) -> None:
         self.config = config
         self.test_reports = []
+        self.dep_tracker = depTracker(config)
+        # for tracking the runtime overhead
+        self.log = {}
 
     def parse_tcp_weights(self) -> list[float]:
         weights = self.config.getoption("--tcp-weight")
@@ -127,8 +124,8 @@ class TCPRunner:
             key=lambda i: (scores.get(i.nodeid, 0), i.nodeid),
             reverse=True
         )
-
-        self.run_tcp_time = time.time() - start_time
+        # log time to compute test order
+        self.log["order_computation"] = time.time() - start_time
 
     def pytest_runtest_logreport(self, report: TestReport) -> None:
         """Record test result of each executed test case"""
@@ -142,12 +139,24 @@ class TCPRunner:
         if self.config.getoption("--tcp"):
             self.run_tcp(items)
 
+    def pytest_pyfunc_call(self, pyfuncitem: Function) -> None:
+        # TODO: collect trace for impacted tests
+        pass
+
+    def pytest_sessionstart(self, session: Session) -> None:
+        # TODO: enable only if the weight for this is not empty
+        start_time = time.time()
+        self.dep_tracker.get_changed_files()
+        self.dep_tracker.get_impacted_tests()
+        self.log["delta_computation"] = time.time() - start_time
+        self.log["delta_changed_files"] = len(self.dep_tracker.changed_files)
+        self.log["delta_impacted_tests"] = len(self.dep_tracker.impacted_tests)
+
     def pytest_sessionfinish(self, session: Session, exitstatus: int) -> None:
         start_time = time.time()
         compute_test_features(self.config, self.test_reports)
         # log time to compute test features for tcp
-        key = os.path.join(TCP_DATA_DIR, "feature_collection_time")
-        self.config.cache.set(key, time.time() - start_time)
+        self.log["feature_collection"] = time.time() - start_time
 
     def pytest_report_collectionfinish(self) -> list[str]:
         """
@@ -157,14 +166,26 @@ class TCPRunner:
         if self.config.getoption("--tcp"):
             # report configured weight
             weights = self.config.getoption("--tcp-weight")
-            report.append(f"Using TCP weights {weights}")
+            report.append(f"Test-Prioritization: weights {weights}")
             # report feature collection
-            key = os.path.join(TCP_DATA_DIR, "feature_collection_time")
-            collect_time = self.config.cache.get(key, None)
-            report.append(f"Collect TCP features took {collect_time}s.")
-            # report tcp algorithm overhead
-            if hasattr(self, "run_tcp_time"):
-                report.append(f"Compute TCP order took {self.run_tcp_time}s.")
+            if 'feature_collection' in self.log:
+                report.append(
+                    "Test-Prioritization: feature collection "
+                    + f" {self.log['feature_collection']}s.")
+            if 'delta_computation' in self.log:
+                # report overhead to collect changed files and impacted tests
+                report.append(
+                    "Test-Prioritization: delta computation "
+                    + f" {self.log['delta_computation']}s, "
+                    + "#changed *.py files "
+                    + f"{self.log['delta_changed_files']} "
+                    + "#impacted tests "
+                    + f"{self.log['delta_impacted_tests']}.")
+            if 'order_computation' in self.log:
+                # report tcp algorithm overhead
+                report.append(
+                    "Test-Prioritization: order computation "
+                    + f" {self.log['order_computation']}s.")
         return report
 
 
