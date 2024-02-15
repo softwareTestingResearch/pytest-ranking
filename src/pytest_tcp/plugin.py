@@ -86,6 +86,8 @@ class TCPRunner:
     def __init__(self, config: Config) -> None:
         self.config = config
         self.test_reports = []
+        # for tracking runtime overhead
+        self.log = {}
 
     def parse_tcp_weights(self) -> list[float]:
         weights = self.config.getoption("--tcp-weight")
@@ -127,8 +129,8 @@ class TCPRunner:
             key=lambda i: (scores.get(i.nodeid, 0), i.nodeid),
             reverse=True
         )
-
-        self.run_tcp_time = time.time() - start_time
+        # log time to compute test order
+        self.log["order_computation"] = time.time() - start_time
 
     def pytest_runtest_logreport(self, report: TestReport) -> None:
         """Record test result of each executed test case"""
@@ -145,9 +147,8 @@ class TCPRunner:
     def pytest_sessionfinish(self, session: Session, exitstatus: int) -> None:
         start_time = time.time()
         compute_test_features(self.config, self.test_reports)
-        # log time to compute test features for tcp
-        key = os.path.join(TCP_DATA_DIR, "feature_collection_time")
-        self.config.cache.set(key, time.time() - start_time)
+        # log time for collecting features
+        self.log["feature_collection"] = time.time() - start_time
 
     def pytest_report_collectionfinish(self) -> list[str]:
         """
@@ -157,14 +158,16 @@ class TCPRunner:
         if self.config.getoption("--tcp"):
             # report configured weight
             weights = self.config.getoption("--tcp-weight")
-            report.append(f"Using TCP weights {weights}")
-            # report feature collection
-            key = os.path.join(TCP_DATA_DIR, "feature_collection_time")
-            collect_time = self.config.cache.get(key, None)
-            report.append(f"Collect TCP features took {collect_time}s.")
+            report.append(f"Test-Prioritization: weights {weights}")
+            if "feature_collection" in self.log:
+                report.append(
+                    "Test-Prioritization: feature collection "
+                    + f"{self.log['feature_collection']}s")
             # report tcp algorithm overhead
-            if hasattr(self, "run_tcp_time"):
-                report.append(f"Compute TCP order took {self.run_tcp_time}s.")
+            if "order_computation" in self.log:
+                report.append(
+                    "Test-Prioritization: order computation "
+                    + f"{self.log['order_computation']}s")
         return report
 
 
