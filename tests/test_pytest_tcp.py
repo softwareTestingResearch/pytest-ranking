@@ -47,6 +47,18 @@ test_class_one = \
     """
 
 
+source_method_one = \
+    """
+    print("source_method_one")
+    """
+
+
+source_class_one = \
+    """
+    print("source_method_one")
+    """
+
+
 @pytest.fixture
 def mytester(pytester):
     pytester.makefile(
@@ -104,7 +116,7 @@ def test_faster_test_first(mytester):
     out.assert_outcomes(passed=4, failed=2)
 
     # run with tcp
-    args = ["-v", "--tcp", "--tcp-weight=1-0"]
+    args = ["-v", "--tcp", "--tcp-weight=1-0-0"]
     out = mytester.runpytest(*args)
 
     # assert outcome to be the same as if no tcp
@@ -136,7 +148,7 @@ def test_recent_fail_first(mytester):
     out.assert_outcomes(passed=4, failed=2)
 
     # run with tcp
-    args = ["-v", "--tcp", "--tcp-weight=0-1"]
+    args = ["-v", "--tcp", "--tcp-weight=0-1-0"]
     out = mytester.runpytest(*args)
 
     # assert outcome to be the same as if no tcp
@@ -156,8 +168,8 @@ def test_recent_fail_first(mytester):
     pass
 
 
-def test_55_weight(mytester):
-    """When --tcp-weight=.5-.5"""
+def test_550_weight(mytester):
+    """When --tcp-weight=.5-.5-0, run recently failed and faster tests first"""
     mytester.makepyfile(
         test_method_one=test_method_one,
         test_class_one=test_class_one,
@@ -169,7 +181,7 @@ def test_55_weight(mytester):
     out.assert_outcomes(passed=4, failed=2)
 
     # run with tcp
-    args = ["-v", "--tcp", "--tcp-weight=.5-.5"]
+    args = ["-v", "--tcp", "--tcp-weight=.5-.5-0"]
     out = mytester.runpytest(*args)
 
     # assert outcome to be the same as if no tcp
@@ -189,6 +201,149 @@ def test_55_weight(mytester):
     pass
 
 
+def test_001_028_weight(mytester):
+    """run failed tests more related to code change first"""
+    mytester.makepyfile(
+        test_method_one=test_method_one,
+        test_class_one=test_class_one,
+    )
+
+    # run without tcp
+    args = ["-v"]
+    out = mytester.runpytest(*args)
+    out.assert_outcomes(passed=4, failed=2)
+
+    # run with tcp
+    args = ["-v", "--tcp"]
+    out = mytester.runpytest(*args)
+
+    # assert outcome to be the same as if no tcp
+    out.assert_outcomes(passed=4, failed=2)
+    # assert faster tests are run first
+    out.stdout.fnmatch_lines(
+        [
+            "test_method_one.py::test_fast_fail FAILED",
+            "test_class_one.py::TestClassSample::test_fast PASSED",
+            "test_method_one.py::test_medium PASSED",
+            "test_class_one.py::TestClassSample::test_medium PASSED",
+            "test_method_one.py::test_slow PASSED",
+            "test_class_one.py::TestClassSample::test_slow_fail FAILED",
+        ],
+        consecutive=True
+    )
+
+    mytester.makepyfile(source_method_one=source_method_one)
+    # run with tcp
+    args = ["-v", "--tcp", "--tcp-weight=0-0-1"]
+    out = mytester.runpytest(*args)
+
+    # assert outcome to be the same as if no tcp
+    out.assert_outcomes(passed=4, failed=2)
+    # assert tests more related to the change are run first
+    out.stdout.fnmatch_lines(
+        [
+            "test_method_one.py::test_slow PASSED",
+            "test_method_one.py::test_medium PASSED",
+            "test_method_one.py::test_fast_fail FAILED",
+            "test_class_one.py::TestClassSample::test_slow_fail FAILED",
+            "test_class_one.py::TestClassSample::test_medium PASSED",
+            "test_class_one.py::TestClassSample::test_fast PASSED",
+        ],
+        consecutive=True
+    )
+
+    mytester.makepyfile(source_class_one=source_class_one)
+    # run with tcp
+    args = ["-v", "--tcp", "--tcp-weight=0-.2-.8"]
+    out = mytester.runpytest(*args)
+
+    # assert outcome to be the same as if no tcp
+    out.assert_outcomes(passed=4, failed=2)
+    # assert faster tests are run first
+    out.stdout.fnmatch_lines(
+        [
+            "test_class_one.py::TestClassSample::test_slow_fail FAILED",
+            "test_class_one.py::TestClassSample::test_medium PASSED",
+            "test_class_one.py::TestClassSample::test_fast PASSED",
+            "test_method_one.py::test_fast_fail FAILED",
+            "test_method_one.py::test_slow PASSED",
+            "test_method_one.py::test_medium PASSED",
+        ],
+        consecutive=True
+    )
+
+
+def test_208_082_weight(mytester):
+    """run faster tests more related to code change first"""
+    mytester.makepyfile(
+        test_method_one=test_method_one,
+        test_class_one=test_class_one,
+    )
+
+    # run without tcp
+    args = ["-v"]
+    out = mytester.runpytest(*args)
+    out.assert_outcomes(passed=4, failed=2)
+
+    # run with tcp
+    args = ["-v", "--tcp"]
+    out = mytester.runpytest(*args)
+
+    # assert outcome to be the same as if no tcp
+    out.assert_outcomes(passed=4, failed=2)
+    # assert faster tests are run first
+    out.stdout.fnmatch_lines(
+        [
+            "test_method_one.py::test_fast_fail FAILED",
+            "test_class_one.py::TestClassSample::test_fast PASSED",
+            "test_method_one.py::test_medium PASSED",
+            "test_class_one.py::TestClassSample::test_medium PASSED",
+            "test_method_one.py::test_slow PASSED",
+            "test_class_one.py::TestClassSample::test_slow_fail FAILED",
+        ],
+        consecutive=True
+    )
+
+    mytester.makepyfile(source_method_one=source_method_one)
+    # run with tcp
+    args = ["-v", "--tcp", "--tcp-weight=.2-0-.8"]
+    out = mytester.runpytest(*args)
+
+    # assert outcome to be the same as if no tcp
+    out.assert_outcomes(passed=4, failed=2)
+    # assert tests more related to the change are run first
+    out.stdout.fnmatch_lines(
+        [
+            "test_method_one.py::test_fast_fail FAILED",
+            "test_method_one.py::test_medium PASSED",
+            "test_method_one.py::test_slow PASSED",
+            "test_class_one.py::TestClassSample::test_fast PASSED",
+            "test_class_one.py::TestClassSample::test_medium PASSED",
+            "test_class_one.py::TestClassSample::test_slow_fail FAILED",
+        ],
+        consecutive=True
+    )
+
+    mytester.makepyfile(source_class_one=source_class_one)
+    # run with tcp
+    args = ["-v", "--tcp", "--tcp-weight=0-.8-.2"]
+    out = mytester.runpytest(*args)
+
+    # assert outcome to be the same as if no tcp
+    out.assert_outcomes(passed=4, failed=2)
+    out.stdout.fnmatch_lines(
+        [
+            "test_class_one.py::TestClassSample::test_slow_fail FAILED",
+            "test_method_one.py::test_fast_fail FAILED",
+            "test_class_one.py::TestClassSample::test_medium PASSED",
+            "test_class_one.py::TestClassSample::test_fast PASSED",
+            "test_method_one.py::test_slow PASSED",
+            "test_method_one.py::test_medium PASSED",
+        ],
+        consecutive=True
+    )
+
+
 def test_logging(mytester):
     mytester.makepyfile(
         test_method_one=test_method_one
@@ -200,9 +355,10 @@ def test_logging(mytester):
     out.assert_outcomes(passed=2, failed=1)
     # should only log feature computation time
     logging_strings = (
-        "Test-Prioritization: weights",
-        "Test-Prioritization: feature collection",
-        "Test-Prioritization: order computation"
+        "[pytest-tcp] Number of files with new hashes",
+        "[pytest-tcp] Relatedness computation time (s)",
+        "[pytest-tcp] Test prioritization weights",
+        "[pytest-tcp] Test order computation time(s)",
     )
 
     assert len([x for x in out.outlines if x.startswith(logging_strings)]) == 0
@@ -212,7 +368,7 @@ def test_logging(mytester):
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=2, failed=1)
     # should log feature computation time and tcp ordering time
-    assert len([x for x in out.outlines if x.startswith(logging_strings)]) == 3
+    assert len([x for x in out.outlines if x.startswith(logging_strings)]) == 4
 
 
 def test_invalid_weight(mytester):

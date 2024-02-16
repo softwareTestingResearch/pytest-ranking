@@ -12,14 +12,8 @@ from _pytest.main import Session
 from _pytest.nodes import Item
 from _pytest.reports import TestReport
 
-TCP_DATA_DIR = "tcp_data"
-TCP_LOG_DIR = "tcp_log"
-TEST_HISTORY_CACHE = "test_history"
-
-
-# Default amount of historical test run results to store per test
-DEFAULT_HIST_LEN = 10
-DEFAULT_WEIGHT = "1-0"
+from .plugin_utils import DEFAULT_HIST_LEN, DEFAULT_WEIGHT, TCP_DATA_DIR
+from .relate import changeRelatedness
 
 
 def pytest_addoption(parser: Parser) -> None:
@@ -41,10 +35,11 @@ def pytest_addoption(parser: Parser) -> None:
         default=DEFAULT_WEIGHT,
         help="""Weights to different TCP heuristics, separated by hyphens `-`.
                 The 1st weight (w1) is for running faster tests,
-                the 2nd weight (w2) is for running recently failed tests.
+                the 2nd weight (w2) is for running recently failed tests,
+                the 3rd weight (w3) is for tests more related to changed files.
                 The sum of all weights must equal to 1.
                 A higher weight means that TCP heuristic is favored.
-                Input format: `w1-w2`. Default value: 1-0, meaning it
+                Input format: `w1-w2-w3`. Default value: 1-0-0, meaning it
                 entirely favors running faster tests.""",
     )
 
@@ -55,14 +50,14 @@ def tcp_weight_type(string: str) -> str:
         return string
     try:
         weights = string.split("-")
-        assert len(weights) == 2
+        assert len(weights) == 3
         weights = [float(w) for w in weights]
         assert int(sum(weights)) == 1
         return string
     except (AssertionError, ValueError):
         raise argparse.ArgumentTypeError(
             "Cannot parse input for `--tcp-weight`."
-            + "Valid examples: 1-0, 0.4-0.6, and .3-.7."
+            + "Valid examples: 1-0-0, 0.4-0.2-0.2, and .2-.7-.1."
         )
 
 
@@ -74,23 +69,25 @@ def z_score_normalization(array: list[float], reverse: bool) -> list[float]:
     return array.tolist()
 
 
-def min_max_normalization(array: list[float], reverse: bool) -> list[float]:
-    array = np.array(array)
-    array = (array - np.min(array)) / (np.max(array) - np.min(array))
-    if reverse:
-        array = 1 - array
-    return array.tolist()
+def min_max_normalization(x: list[float]) -> list[float]:
+    x = np.array(x)
+    x_range = (np.max(x) - np.min(x))
+    x = (x - np.min(x)) / x_range if x_range else np.zeros(len(x))
+    return x
 
 
 class TCPRunner:
     def __init__(self, config: Config) -> None:
         self.config = config
         self.test_reports = []
-        # for tracking runtime overhead
+        # for logging runtime overhead, etc
         self.log = {}
+        self.change_rel = changeRelatedness(config)
 
     def parse_tcp_weights(self) -> list[float]:
         weights = self.config.getoption("--tcp-weight")
+        self.log['Test prioritization weights'] = weights
+
         weights = weights.split("-")
         weights = [float(w) for w in weights]
         return weights
@@ -98,39 +95,50 @@ class TCPRunner:
     def load_feature_data(
             self,
             feature_name: str,
-            items: list[Item], reverse) -> list[float]:
+            items: list[Item],
+            transform: bool) -> list[float]:
         """
         Load and normalize test-wise feature data for the current test suite
+        transform should be True if smaller was better
         """
         # load original data
         key = os.path.join(TCP_DATA_DIR, feature_name)
         values = self.config.cache.get(key, {})
         # 0 if not exist yet implicitly prioritizes new selected/created tests
-        values = [values.get(i.nodeid, 0) for i in items]
-        # normalize, if test with smaller value is prioritized, reverse
-        values = min_max_normalization(values, reverse)
-        return values
+        values = [values.get(item.nodeid, 0) for item in items]
+        # normalize
+        values = min_max_normalization(values)
+        # if smaller values is better, transform to larger is better
+        if transform:
+            values = 1 - values
+        return values.tolist()
 
     def run_tcp(self, items: list[Item]) -> None:
         """Run test prioritization algorithm"""
+        # load code change features
+        num_delta_file, compute_time = self.change_rel.run(items)
+        self.log['Number of files with new hashes'] = num_delta_file
+        self.log['Relatedness computation time (s)'] = compute_time
+
+        # start ordering tests
         start_time = time.time()
 
         h_time = self.load_feature_data("last_durations", items, True)
         h_fail = self.load_feature_data("num_runs_since_fail", items, True)
-        w_time, w_fail = self.parse_tcp_weights()
+        h_rel = self.load_feature_data("change_relatedness", items, False)
+        w_time, w_fail, w_rel = self.parse_tcp_weights()
 
-        def priority(i):
-            return h_time[i] * w_time + h_fail[i] * w_fail
+        def rank(i):
+            return h_time[i] * w_time + h_fail[i] * w_fail + h_rel[i] * w_rel
 
         # assign priority score to each test by weighted sum
-        # tests with higher scores are run first
-        scores = {item.nodeid: priority(i) for i, item in enumerate(items)}
+        # tests with higher priority score are run first: descending sort
+        scores = {item.nodeid: rank(i) for i, item in enumerate(items)}
         items.sort(
-            key=lambda i: (scores.get(i.nodeid, 0), i.nodeid),
-            reverse=True
-        )
+            key=lambda item: (scores.get(item.nodeid, 0), item.nodeid),
+            reverse=True)
         # log time to compute test order
-        self.log["order_computation"] = time.time() - start_time
+        self.log["Test order computation time(s)"] = time.time() - start_time
 
     def pytest_runtest_logreport(self, report: TestReport) -> None:
         """Record test result of each executed test case"""
@@ -148,26 +156,15 @@ class TCPRunner:
         start_time = time.time()
         compute_test_features(self.config, self.test_reports)
         # log time for collecting features
-        self.log["feature_collection"] = time.time() - start_time
+        self.log["Feature collection time (s)"] = time.time() - start_time
 
     def pytest_report_collectionfinish(self) -> list[str]:
         """
         Report time to collect TCP data and run TCP, when the plugin is enabled
         """
         report = []
-        if self.config.getoption("--tcp"):
-            # report configured weight
-            weights = self.config.getoption("--tcp-weight")
-            report.append(f"Test-Prioritization: weights {weights}")
-            if "feature_collection" in self.log:
-                report.append(
-                    "Test-Prioritization: feature collection "
-                    + f"{self.log['feature_collection']}s")
-            # report tcp algorithm overhead
-            if "order_computation" in self.log:
-                report.append(
-                    "Test-Prioritization: order computation "
-                    + f"{self.log['order_computation']}s")
+        for k, v in self.log.items():
+            report.append(f"[pytest-tcp] {k}: {v}")
         return report
 
 
