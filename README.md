@@ -77,7 +77,7 @@ and run `pytest --rank` on command line.
 
 ### Warning
 
-Because `pytest-rank` re-orders tests to speed up failure detection time, please disable other pytest plugins that enforeces other test orders, e.g., [pytest-randomly](https://github.com/pytest-dev/pytest-randomly), [pytest-random-order](https://github.com/pytest-dev/pytest-random-order), [pytest-reverse](https://github.com/adamchainz/pytest-reverse).
+Because `pytest-ranking` re-orders tests to speed up failure detection time, please disable other pytest plugins that enforeces other test orders, e.g., [pytest-randomly](https://github.com/pytest-dev/pytest-randomly), [pytest-random-order](https://github.com/pytest-dev/pytest-random-order), [pytest-reverse](https://github.com/adamchainz/pytest-reverse).
 
 
 ## Contributing
