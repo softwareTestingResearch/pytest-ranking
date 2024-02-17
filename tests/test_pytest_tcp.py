@@ -359,6 +359,7 @@ def test_logging(mytester):
         "[pytest-tcp] Relatedness computation time (s)",
         "[pytest-tcp] Test prioritization weights",
         "[pytest-tcp] Test order computation time(s)",
+        "[pytest-tcp] Test prioritization history length"
     )
 
     assert len([x for x in out.outlines if x.startswith(logging_strings)]) == 0
@@ -368,7 +369,7 @@ def test_logging(mytester):
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=2, failed=1)
     # should log feature computation time and tcp ordering time
-    assert len([x for x in out.outlines if x.startswith(logging_strings)]) == 4
+    assert len([x for x in out.outlines if x.startswith(logging_strings)]) == 5
 
 
 def test_invalid_weight(mytester):

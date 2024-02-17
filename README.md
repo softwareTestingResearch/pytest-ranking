@@ -32,13 +32,14 @@ pytest --tcp
 The terminal output will tell you the current configurations and runtime overhead of this plugin:
 
  ```text
+[pytest-tcp] Test prioritization weights: 1-1-0
+[pytest-tcp] Test prioritization history length: 30
 [pytest-tcp] Number of files with new hashes: 0
-[pytest-tcp] Relatedness computation time (s): 0.0008080005645751953
-[pytest-tcp] Test prioritization weights: .5-.5-0
-[pytest-tcp] Test order computation time(s): 0.0002009868621826172
+[pytest-tcp] Relatedness computation time (s): 0.0007872581481933594
+[pytest-tcp] Test order computation time(s): 0.00020933151245117188
 ```
 
-You can configure the weights of different prioritization heuristics by additionally passing the `--tcp-weight` flag with formatted values:
+You can configure the weights of different prioritization heuristics by additionally passing the optional `--tcp-weight` flag with formatted values:
 
 ```bash
 pytest --tcp --tcp-weight=0-1-0
@@ -48,13 +49,30 @@ Weights are separated by hyphens ``-``. The 1st weight is for running faster tes
 All weights must be integers or floats, and the sum of their sum will be normalized to 1.
 A higher weight means that a corresponding heuristic is favored. The default value is ``1-0-0``, meaning it entirely favors running faster tests.
 
+
+You can also configure the maximum window size of previous test runs to compute the number of runs since a test had failed by additionally passing the optional `--tcp-hist-len` flag as an integer input:
+
+```bash
+pytest --tcp --tcp-hist-len=30
+```
+
+
 You can make these options always apply by adding them to the ``addopts`` setting in your [pytest.ini](https://docs.pytest.org/en/latest/reference/customize.html#configuration).
 
+For example, create `pytest.ini` in the codebase root folder as such:
 ```ini
 [pytest]
-
-addopts = --tcp --tcp-weight=3-5-2
+addopts = --tcp --tcp-weight=0-1-0 --tcp-hist-len=30
 ```
+
+Alternatively, you can create `pytest.ini` in the codebase root folder as such:
+```ini
+[pytest]
+tcp-weight=0-1-0
+tcp-hist-len=30
+```
+
+and run `pytest --tcp`
 
 
 ### Warning
