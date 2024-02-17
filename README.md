@@ -59,18 +59,18 @@ pytest --rank --rank-hist-len=30
 
 You can always apply these options by adding them to the ``addopts`` setting in your [pytest.ini](https://docs.pytest.org/en/latest/reference/customize.html#configuration).
 
-For example, create `pytest.ini` in the codebase root folder as such:
+For example, create `pytest.ini` in your codebase root folder as such:
 ```ini
 [pytest]
 addopts = --rank --rank-weight=0-1-0 --rank-hist-len=30
 ```
 and run `pytest` on command line.
 
-Alternatively, you can also create `pytest.ini` in the codebase root folder as such:
+Alternatively, you can also create `pytest.ini` in your codebase root folder as such:
 ```ini
 [pytest]
-rank-weight=0-1-0
-rank-hist-len=30
+rank_weight=0-1-0
+rank_hist_len=30
 ```
 
 and run `pytest --rank` on command line.
