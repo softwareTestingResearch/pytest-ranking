@@ -10,7 +10,7 @@
 
 A Pytest plugin for reducing failure detection time of your Python test suite with automated test prioritization/ranking.
 
-This [pytest](https://github.com/pytest-dev/pytest) plugin allows you to find failures faster and receive sooner debugging feedback from CI. It speed up test failure detection for your test suite by prioritizing the execution of tests that are faster, recently failed and/or more textually related to code change.
+This [pytest](https://github.com/pytest-dev/pytest) plugin allows you to find failures faster and receive sooner debugging feedback from CI. It speed up the failure detection of your test suite by prioritizing the execution of tests that are faster, recently failed and/or more textually related to code change.
 
 ## Installation
 
@@ -29,7 +29,7 @@ Pytest will automatically find the plugin and use it when you run ``pytest``. Yo
 pytest --rank
 ```
 
-The terminal output will tell you the current configurations and runtime overhead of this plugin:
+The terminal output will tell you the current configurations and runtime overhead of this plugin. For example:
 
  ```text
 [pytest-ranking] Weights: 1-1-0
@@ -39,33 +39,34 @@ The terminal output will tell you the current configurations and runtime overhea
 [pytest-ranking] Test order computation time(s): 0.00020933151245117188
 ```
 
-You can configure the weights of different prioritization heuristics by additionally passing the optional `--rank-weight` flag with formatted values:
+You can configure the weights of different prioritization heuristics by passing the optional `--rank-weight` flag with formatted values:
 
 ```bash
 pytest --rank --rank-weight=0-1-0
 ```
 
 Weights are separated by hyphens ``-``. The 1st weight is for running faster tests, the 2nd weight is for running recently failed tests, and the 3rd weight is for running tests more textually similar to the changed `*.py` files in the codebase since the last run.
-All weights must be integers or floats, and the sum of their sum will be normalized to 1.
-A higher weight means that a corresponding heuristic is favored. The default value is ``1-0-0``, meaning it entirely favors running faster tests.
+All weights must be integers or floats, and their sum will be normalized to 1.
+A higher weight means that a corresponding heuristic is favored. The default value is ``1-0-0``, only prioritizes faster tests.
 
 
-You can also configure the maximum window size of previous test runs to compute the number of runs since a test had failed by additionally passing the optional `--rank-hist-len` flag as an integer input (the default value is 50):
+You can also configure the maximum window size for looking into previous test runs, which is used to compute the number of runs since a test had failed, by passing the optional `--rank-hist-len` flag (the default value is 50):
 
 ```bash
 pytest --rank --rank-hist-len=30
 ```
 
 
-You can make these options always apply by adding them to the ``addopts`` setting in your [pytest.ini](https://docs.pytest.org/en/latest/reference/customize.html#configuration).
+You can always apply these options by adding them to the ``addopts`` setting in your [pytest.ini](https://docs.pytest.org/en/latest/reference/customize.html#configuration).
 
 For example, create `pytest.ini` in the codebase root folder as such:
 ```ini
 [pytest]
 addopts = --rank --rank-weight=0-1-0 --rank-hist-len=30
 ```
+and run `pytest` on command line.
 
-Alternatively, you can create `pytest.ini` in the codebase root folder as such:
+Alternatively, you can also create `pytest.ini` in the codebase root folder as such:
 ```ini
 [pytest]
 rank-weight=0-1-0

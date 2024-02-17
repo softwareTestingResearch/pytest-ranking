@@ -15,7 +15,7 @@ def read(fname):
 
 setup(
     name='pytest-ranking',
-    version='0.2.3',
+    version='0.2.4',
     author='softwareTestingResearch',
     author_email='testingresearch4all@gmail.com',
     maintainer='softwareTestingResearch',
