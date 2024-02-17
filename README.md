@@ -4,7 +4,7 @@
 
 
 [![CI](https://github.com/softwareTestingResearch/pytest-ranking/workflows/CI/badge.svg)](https://github.com/softwareTestingResearch/pytest-ranking/actions?workflow=CI)
-[![PyPI](https://img.shields.io/pypi/v/pytest-ranking?color=blue)](https://pypi.org/project/pytest-ranking)
+[![PyPI](https://img.shields.io/pypi/v/pytest-ranking)](https://pypi.org/project/pytest-ranking)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/softwareTestingResearch/pytest-ranking/main.svg)](https://results.pre-commit.ci/latest/github/softwareTestingResearch/pytest-ranking/main)
 
 
