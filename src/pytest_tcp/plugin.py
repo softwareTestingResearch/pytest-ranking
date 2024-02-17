@@ -21,7 +21,7 @@ def pytest_addoption(parser: Parser) -> None:
     group._addoption(
         "--tcp",
         action="store_true",
-        help="""Run test-case prioritization (TCP) algorithm.
+        help="""Run test prioritization algorithm for pytest test suite.
                 It reorders tests in test suite to expose test failure sooner.
                 Default behavior: runs faster tests first,
                 so that more tests are executed per unit time.
@@ -33,12 +33,13 @@ def pytest_addoption(parser: Parser) -> None:
         action="store",
         type=tcp_weight_type,
         default=DEFAULT_WEIGHT,
-        help="""Weights to different TCP heuristics, separated by hyphens `-`.
+        help="""Weights to different prioritization heuristics,
+                separated by hyphens `-`.
                 The 1st weight (w1) is for running faster tests,
                 the 2nd weight (w2) is for running recently failed tests,
                 the 3rd weight (w3) is for tests more related to changed files.
-                The sum of all weights must equal to 1.
-                A higher weight means that TCP heuristic is favored.
+                The sum of weights will be normalized to 1.
+                Higher weight means that heuristic will be favored.
                 Input format: `w1-w2-w3`. Default value: 1-0-0, meaning it
                 entirely favors running faster tests.""",
     )
@@ -52,12 +53,11 @@ def tcp_weight_type(string: str) -> str:
         weights = string.split("-")
         assert len(weights) == 3
         weights = [float(w) for w in weights]
-        assert int(sum(weights)) == 1
         return string
     except (AssertionError, ValueError):
         raise argparse.ArgumentTypeError(
             "Cannot parse input for `--tcp-weight`."
-            + "Valid examples: 1-0-0, 0.4-0.2-0.2, and .2-.7-.1."
+            + "Valid examples: 1-0-0, 0.4-0.2-0.2, and 2-7-1."
         )
 
 
@@ -69,7 +69,7 @@ def z_score_normalization(array: list[float], reverse: bool) -> list[float]:
     return array.tolist()
 
 
-def min_max_normalization(x: list[float]) -> list[float]:
+def min_max_normalization(x: list[float]) -> np.ndarray:
     x = np.array(x)
     x_range = (np.max(x) - np.min(x))
     x = (x - np.min(x)) / x_range if x_range else np.zeros(len(x))
@@ -90,6 +90,8 @@ class TCPRunner:
 
         weights = weights.split("-")
         weights = [float(w) for w in weights]
+        weight_sum = sum(weights)
+        weights = [w_i / weight_sum for w_i in weights]
         return weights
 
     def load_feature_data(

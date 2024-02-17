@@ -181,7 +181,7 @@ def test_550_weight(mytester):
     out.assert_outcomes(passed=4, failed=2)
 
     # run with tcp
-    args = ["-v", "--tcp", "--tcp-weight=.5-.5-0"]
+    args = ["-v", "--tcp", "--tcp-weight=5-5-0"]
     out = mytester.runpytest(*args)
 
     # assert outcome to be the same as if no tcp
@@ -254,7 +254,7 @@ def test_001_028_weight(mytester):
 
     mytester.makepyfile(source_class_one=source_class_one)
     # run with tcp
-    args = ["-v", "--tcp", "--tcp-weight=0-.2-.8"]
+    args = ["-v", "--tcp", "--tcp-weight=0-2-8"]
     out = mytester.runpytest(*args)
 
     # assert outcome to be the same as if no tcp
@@ -273,7 +273,7 @@ def test_001_028_weight(mytester):
     )
 
 
-def test_208_082_weight(mytester):
+def test_208_093_weight(mytester):
     """run faster tests more related to code change first"""
     mytester.makepyfile(
         test_method_one=test_method_one,
@@ -326,7 +326,7 @@ def test_208_082_weight(mytester):
 
     mytester.makepyfile(source_class_one=source_class_one)
     # run with tcp
-    args = ["-v", "--tcp", "--tcp-weight=0-.8-.2"]
+    args = ["-v", "--tcp", "--tcp-weight=0-9-3"]
     out = mytester.runpytest(*args)
 
     # assert outcome to be the same as if no tcp
@@ -375,8 +375,13 @@ def test_invalid_weight(mytester):
     mytester.makepyfile(
         test_method_one=test_method_one
     )
-    # run without tcp
     args = ["-v", "--tcp", "--tcp-weight=1-3"]
+    out = mytester.runpytest(*args)
+    error_msg = "pytest: error: argument --tcp-weight:" \
+        + " Cannot parse input for `--tcp-weight`."
+    assert len([x for x in out.errlines if x.startswith(error_msg)]) == 1
+
+    args = ["-v", "--tcp", "--tcp-weight=1-3-x"]
     out = mytester.runpytest(*args)
     error_msg = "pytest: error: argument --tcp-weight:" \
         + " Cannot parse input for `--tcp-weight`."
