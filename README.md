@@ -4,13 +4,13 @@
 
 
 [![CI](https://github.com/softwareTestingResearch/pytest-ranking/workflows/CI/badge.svg)](https://github.com/softwareTestingResearch/pytest-ranking/actions?workflow=CI)
-[![PyPI](https://img.shields.io/pypi/pyversions/pytest-ranking.svg)](https://pypi.org/project/pytest-ranking)
+[![PyPI](https://img.shields.io/pypi/v/pytest-ranking?color=blue)](https://pypi.org/project/pytest-ranking)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/softwareTestingResearch/pytest-ranking/main.svg)](https://results.pre-commit.ci/latest/github/softwareTestingResearch/pytest-ranking/main)
 
 
 A Pytest plugin for reducing failure detection time of your Python test suite with automated test prioritization/ranking.
 
-This [pytest](https://github.com/pytest-dev/pytest) plugin allows you to find failures faster and receive sooner debugging feedback from CI. It speed up test failure detection for your test suite by prioritizing the execution of tests that have shorter execution time and/or recently failed and/or more textually related to code change.
+This [pytest](https://github.com/pytest-dev/pytest) plugin allows you to find failures faster and receive sooner debugging feedback from CI. It speed up test failure detection for your test suite by prioritizing the execution of tests that are faster, recently failed and/or more textually related to code change.
 
 ## Installation
 
