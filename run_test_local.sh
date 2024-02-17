@@ -3,4 +3,4 @@
 pip install .
 pytest -xv
 
-pip uninstall pytest-tcp
+pip uninstall pytest-ranking

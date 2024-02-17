@@ -84,7 +84,7 @@ def test_default(mytester):
     out.assert_outcomes(passed=4, failed=2)
 
     # run with tcp
-    args = ["-v", "--tcp"]
+    args = ["-v", "--rank"]
     out = mytester.runpytest(*args)
 
     # assert outcome to be the same as if no tcp
@@ -116,7 +116,7 @@ def test_faster_test_first(mytester):
     out.assert_outcomes(passed=4, failed=2)
 
     # run with tcp
-    args = ["-v", "--tcp", "--tcp-weight=1-0-0"]
+    args = ["-v", "--rank", "--rank-weight=1-0-0"]
     out = mytester.runpytest(*args)
 
     # assert outcome to be the same as if no tcp
@@ -148,7 +148,7 @@ def test_recent_fail_first(mytester):
     out.assert_outcomes(passed=4, failed=2)
 
     # run with tcp
-    args = ["-v", "--tcp", "--tcp-weight=0-1-0"]
+    args = ["-v", "--rank", "--rank-weight=0-1-0"]
     out = mytester.runpytest(*args)
 
     # assert outcome to be the same as if no tcp
@@ -169,7 +169,7 @@ def test_recent_fail_first(mytester):
 
 
 def test_550_weight(mytester):
-    """When --tcp-weight=.5-.5-0, run recently failed and faster tests first"""
+    """--rank-weight=.5-.5-0, run recently failed and faster tests first"""
     mytester.makepyfile(
         test_method_one=test_method_one,
         test_class_one=test_class_one,
@@ -181,7 +181,7 @@ def test_550_weight(mytester):
     out.assert_outcomes(passed=4, failed=2)
 
     # run with tcp
-    args = ["-v", "--tcp", "--tcp-weight=5-5-0"]
+    args = ["-v", "--rank", "--rank-weight=5-5-0"]
     out = mytester.runpytest(*args)
 
     # assert outcome to be the same as if no tcp
@@ -214,7 +214,7 @@ def test_001_028_weight(mytester):
     out.assert_outcomes(passed=4, failed=2)
 
     # run with tcp
-    args = ["-v", "--tcp"]
+    args = ["-v", "--rank"]
     out = mytester.runpytest(*args)
 
     # assert outcome to be the same as if no tcp
@@ -234,7 +234,7 @@ def test_001_028_weight(mytester):
 
     mytester.makepyfile(source_method_one=source_method_one)
     # run with tcp
-    args = ["-v", "--tcp", "--tcp-weight=0-0-1"]
+    args = ["-v", "--rank", "--rank-weight=0-0-1"]
     out = mytester.runpytest(*args)
 
     # assert outcome to be the same as if no tcp
@@ -254,7 +254,7 @@ def test_001_028_weight(mytester):
 
     mytester.makepyfile(source_class_one=source_class_one)
     # run with tcp
-    args = ["-v", "--tcp", "--tcp-weight=0-2-8"]
+    args = ["-v", "--rank", "--rank-weight=0-2-8"]
     out = mytester.runpytest(*args)
 
     # assert outcome to be the same as if no tcp
@@ -286,7 +286,7 @@ def test_208_093_weight(mytester):
     out.assert_outcomes(passed=4, failed=2)
 
     # run with tcp
-    args = ["-v", "--tcp"]
+    args = ["-v", "--rank"]
     out = mytester.runpytest(*args)
 
     # assert outcome to be the same as if no tcp
@@ -306,7 +306,7 @@ def test_208_093_weight(mytester):
 
     mytester.makepyfile(source_method_one=source_method_one)
     # run with tcp
-    args = ["-v", "--tcp", "--tcp-weight=.2-0-.8"]
+    args = ["-v", "--rank", "--rank-weight=.2-0-.8"]
     out = mytester.runpytest(*args)
 
     # assert outcome to be the same as if no tcp
@@ -326,7 +326,7 @@ def test_208_093_weight(mytester):
 
     mytester.makepyfile(source_class_one=source_class_one)
     # run with tcp
-    args = ["-v", "--tcp", "--tcp-weight=0-9-3"]
+    args = ["-v", "--rank", "--rank-weight=0-9-3"]
     out = mytester.runpytest(*args)
 
     # assert outcome to be the same as if no tcp
@@ -355,17 +355,17 @@ def test_logging(mytester):
     out.assert_outcomes(passed=2, failed=1)
     # should only log feature computation time
     logging_strings = (
-        "[pytest-tcp] Number of files with new hashes",
-        "[pytest-tcp] Relatedness computation time (s)",
-        "[pytest-tcp] Test prioritization weights",
-        "[pytest-tcp] Test order computation time(s)",
-        "[pytest-tcp] Test prioritization history length"
+        "[pytest-ranking] Number of files with new hashes",
+        "[pytest-ranking] Relatedness computation time (s)",
+        "[pytest-ranking] Test prioritization weights",
+        "[pytest-ranking] Test order computation time(s)",
+        "[pytest-ranking] Test prioritization history length"
     )
 
     assert len([x for x in out.outlines if x.startswith(logging_strings)]) == 0
 
     # run with tcp
-    args = ["-v", "--tcp"]
+    args = ["-v", "--rank"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=2, failed=1)
     # should log feature computation time and tcp ordering time
@@ -376,14 +376,14 @@ def test_invalid_weight(mytester):
     mytester.makepyfile(
         test_method_one=test_method_one
     )
-    args = ["-v", "--tcp", "--tcp-weight=1-3"]
+    args = ["-v", "--rank", "--rank-weight=1-3"]
     out = mytester.runpytest(*args)
-    error_msg = "pytest: error: argument --tcp-weight:" \
-        + " Cannot parse input for `--tcp-weight`."
+    error_msg = "pytest: error: argument --rank-weight:" \
+        + " Cannot parse input for `--rank-weight`."
     assert len([x for x in out.errlines if x.startswith(error_msg)]) == 1
 
-    args = ["-v", "--tcp", "--tcp-weight=1-3-x"]
+    args = ["-v", "--rank", "--rank-weight=1-3-x"]
     out = mytester.runpytest(*args)
-    error_msg = "pytest: error: argument --tcp-weight:" \
-        + " Cannot parse input for `--tcp-weight`."
+    error_msg = "pytest: error: argument --rank-weight:" \
+        + " Cannot parse input for `--rank-weight`."
     assert len([x for x in out.errlines if x.startswith(error_msg)]) == 1

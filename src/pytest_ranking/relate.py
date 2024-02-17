@@ -9,7 +9,7 @@ import time
 from _pytest.config import Config
 from _pytest.nodes import Item
 
-from .plugin_utils import TCP_DATA_DIR
+from .plugin_utils import DATA_DIR
 
 
 def tokenize(string: str) -> list[str]:
@@ -43,7 +43,7 @@ class changeRelatedness:
         file_paths = self.get_all_file_paths()
         hashes = {path: self.get_hash(path) for path in file_paths}
 
-        key = os.path.join(TCP_DATA_DIR, "file_hashes")
+        key = os.path.join(DATA_DIR, "file_hashes")
         # load file hashes since last run
         old_hashes = self.pytest_config.cache.get(key, {})
         # save newest hashes anyway
@@ -67,7 +67,7 @@ class changeRelatedness:
         for item in items:
             test_tokens = set(tokenize(item.nodeid))
             ret[item.nodeid] = len(self.delta.intersection(set(test_tokens)))
-        key = os.path.join(TCP_DATA_DIR, "change_relatedness")
+        key = os.path.join(DATA_DIR, "change_relatedness")
         self.pytest_config.cache.set(key, ret)
 
     def run(self, items: list[Item]) -> tuple[int, float]:

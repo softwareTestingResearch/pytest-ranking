@@ -14,15 +14,16 @@ def read(fname):
 
 
 setup(
-    name='pytest-tcp',
+    name='pytest-ranking',
     version='0.1.0',
     author='softwareTestingResearch',
     author_email='testingresearch4all@gmail.com',
     maintainer='softwareTestingResearch',
     maintainer_email='testingresearch4all@gmail.com',
     license='MIT',
-    url='https://github.com/softwareTestingResearch/pytest-tcp',
-    description='A Pytest plugin for test prioritization',
+    url='https://github.com/softwareTestingResearch/pytest-ranking',
+    description='A Pytest plugin for automatically'
+        + ' prioritizing/ranking tests to speed up failure detection',
     long_description=read('README.md'),
     packages=find_packages('src'),
     package_dir={'': 'src'},
@@ -53,13 +54,12 @@ setup(
         'pytest',
         'py.test',
         'test prioritization',
-        'test order',
         'test ordering',
         'test ranking'
     ],
     entry_points={
         'pytest11': [
-            'pytest_tcp = pytest_tcp.plugin',
+            'pytest_ranking = pytest_ranking.plugin',
         ],
     },
 )

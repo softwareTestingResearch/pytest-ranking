@@ -12,14 +12,14 @@ from _pytest.main import Session
 from _pytest.nodes import Item
 from _pytest.reports import TestReport
 
-from .plugin_utils import DEFAULT_HIST_LEN, DEFAULT_WEIGHT, TCP_DATA_DIR
+from .plugin_utils import DATA_DIR, DEFAULT_HIST_LEN, DEFAULT_WEIGHT
 from .relate import changeRelatedness
 
-PLUGIN_HELP = "Run test prioritization algorithm for pytest test suite. "\
-    "It reorders tests in test suite to expose test failure sooner. "\
+PLUGIN_HELP = "Run test-case prioritization algorithm for pytest test suite. "\
+    "It re-orders execution of tests to expose test failure sooner. "\
     "Default behavior: runs faster tests first, "\
     "so that more tests are executed per unit time. "\
-    "See more customization in the `--tcp-weight` option."
+    "See more customization in the `--rank-weight` option."
 
 WEIGHT_HELP = "Weights to different prioritization heuristics, "\
     "separated by hyphens `-`."\
@@ -37,30 +37,30 @@ HIST_LEN_HELP = "History length, the number of previous test runs used "\
 
 
 def pytest_addoption(parser: Parser) -> None:
-    group = parser.getgroup("tcp", "pytest-tcp")
+    group = parser.getgroup("rank", "pytest-ranking")
     group._addoption(
-        "--tcp",
+        "--rank",
         action="store_true",
         help=PLUGIN_HELP)
 
     group._addoption(
-        "--tcp-weight",
+        "--rank-weight",
         action="store",
         type=tcp_weight_type,
         default=DEFAULT_WEIGHT,
-        dest="tcp_weight",
+        dest="rank_weight",
         help=WEIGHT_HELP)
 
     group._addoption(
-        "--tcp-hist-len",
+        "--rank-hist-len",
         action="store",
         type=int,
-        dest="tcp_hist_len",
+        dest="rank_hist_len",
         default=DEFAULT_HIST_LEN,
         help=HIST_LEN_HELP)
 
-    parser.addini("tcp_weight", WEIGHT_HELP, default=DEFAULT_WEIGHT)
-    parser.addini("tcp_hist_len", HIST_LEN_HELP, default=DEFAULT_HIST_LEN)
+    parser.addini("rank_weight", WEIGHT_HELP, default=DEFAULT_WEIGHT)
+    parser.addini("rank_hist_len", HIST_LEN_HELP, default=DEFAULT_HIST_LEN)
 
 
 def tcp_weight_type(string: str) -> str:
@@ -74,7 +74,7 @@ def tcp_weight_type(string: str) -> str:
         return string
     except (AssertionError, ValueError):
         raise argparse.ArgumentTypeError(
-            "Cannot parse input for `--tcp-weight`."
+            "Cannot parse input for `--rank-weight`."
             + "Valid examples: 1-0-0, 0.4-0.2-0.2, and 2-7-1."
         )
 
@@ -95,6 +95,7 @@ def min_max_normalization(x: list[float]) -> np.ndarray:
 
 
 class TCPRunner:
+    """Plugin class"""
     def __init__(self, config: Config) -> None:
         self.config = config
         self.test_reports = []
@@ -106,9 +107,9 @@ class TCPRunner:
 
     def parse_tcp_weights(self) -> list[float]:
         """Get weights, non-default CLI overrides ini file input"""
-        weights = self.config.getoption("--tcp-weight")
+        weights = self.config.getoption("--rank-weight")
         if weights == DEFAULT_WEIGHT:
-            ini_val = self.config.getini("tcp_weight")
+            ini_val = self.config.getini("rank_weight")
             weights = ini_val if ini_val else weights
         self.log['Test prioritization weights'] = weights
 
@@ -121,9 +122,9 @@ class TCPRunner:
     def parse_hist_len(self) -> int:
         """Get history length, non-default CLI overrides ini file input"""
         # Get the hist len limit
-        hist_len = self.config.getoption("--tcp-hist-len")
+        hist_len = self.config.getoption("--rank-hist-len")
         if hist_len == DEFAULT_HIST_LEN:
-            ini_val = self.config.getini("tcp_hist_len")
+            ini_val = self.config.getini("rank_hist_len")
             hist_len = ini_val if ini_val else hist_len
         self.log['Test prioritization history length'] = hist_len
         return int(hist_len)
@@ -138,7 +139,7 @@ class TCPRunner:
         transform should be True if smaller was better
         """
         # load original data
-        key = os.path.join(TCP_DATA_DIR, feature_name)
+        key = os.path.join(DATA_DIR, feature_name)
         values = self.config.cache.get(key, {})
         # 0 if not exist yet implicitly prioritizes new selected/created tests
         values = [values.get(item.nodeid, 0) for item in items]
@@ -185,7 +186,7 @@ class TCPRunner:
 
     @pytest.hookimpl(trylast=True)
     def pytest_collection_modifyitems(self, items: list[Item]) -> None:
-        if self.config.getoption("--tcp"):
+        if self.config.getoption("--rank"):
             self.run_tcp(items)
 
     def pytest_sessionfinish(self, session: Session, exitstatus: int) -> None:
@@ -199,9 +200,9 @@ class TCPRunner:
         Report time to collect TCP data and run TCP, when the plugin is enabled
         """
         report = []
-        if self.config.getoption("--tcp"):
+        if self.config.getoption("--rank"):
             for k, v in self.log.items():
-                report.append(f"[pytest-tcp] {k}: {v}")
+                report.append(f"[pytest-ranking] {k}: {v}")
         return report
 
 
@@ -210,7 +211,7 @@ def compute_test_features(
         test_reports: list[TestReport],
         hist_len: int) -> None:
     # Get the duration of the each test's most recent execution
-    key = os.path.join(TCP_DATA_DIR, "last_durations")
+    key = os.path.join(DATA_DIR, "last_durations")
     last_durations = config.cache.get(key, {})
     for report in test_reports:
         nodeid = report.nodeid
@@ -219,7 +220,7 @@ def compute_test_features(
     config.cache.set(key, last_durations)
 
     # Get number of test runs since last failure
-    key = os.path.join(TCP_DATA_DIR, "num_runs_since_fail")
+    key = os.path.join(DATA_DIR, "num_runs_since_fail")
     num_runs_since_fail = config.cache.get(key, {})
     for report in test_reports:
         nodeid = report.nodeid
