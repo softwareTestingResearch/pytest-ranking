@@ -32,25 +32,28 @@ pytest --tcp
 The terminal output will tell you the current configurations and runtime overhead of this plugin:
 
  ```text
-Using TCP weights 1-0
-Collect TCP features took 0.0029001235961914062s.
-Compute TCP order took 0.0002548694610595703s.
+[pytest-tcp] Number of files with new hashes: 0
+[pytest-tcp] Relatedness computation time (s): 0.0008080005645751953
+[pytest-tcp] Test prioritization weights: .5-.5-0
+[pytest-tcp] Test order computation time(s): 0.0002009868621826172
 ```
 
 You can configure the weights of different prioritization heuristics by additionally passing the `--tcp-weight` flag with formatted values:
 
 ```bash
-pytest --tcp --tcp-weight=0-1
+pytest --tcp --tcp-weight=0-1-0
 ```
 
-Weights are separated by hyphens ``-``. The 1st weight is for running faster tests, the 2nd weight is for running recently failed tests. The sum of all weights must equal to 1. A higher weight means that a corresponding heuristic is favored. The default value is ``1-0``, meaning it entirely favors running faster tests.
+Weights are separated by hyphens ``-``. The 1st weight is for running faster tests, the 2nd weight is for running recently failed tests, and the 3rd weight is for running tests more textually similar to the changed `*.py` files in the codebase since the last run.
+All weights must be integers or floats, and the sum of their sum will be normalized to 1.
+A higher weight means that a corresponding heuristic is favored. The default value is ``1-0-0``, meaning it entirely favors running faster tests.
 
 You can make these options always apply by adding them to the ``addopts`` setting in your [pytest.ini](https://docs.pytest.org/en/latest/reference/customize.html#configuration).
 
 ```ini
 [pytest]
 
-addopts = --tcp --tcp-weight=0.5-0.5
+addopts = --tcp --tcp-weight=3-5-2
 ```
 
 
@@ -71,4 +74,4 @@ Distributed under the terms of the [MIT](http://opensource.org/licenses/MIT)  li
 
 ## Issues
 
-If you encounter any problems, please [file an issue](https://github.com/softwareTestingResearch/pytest-tcp/issues) along with a detailed description.
+If you encounter any problems, please [file an issue](https://github.com/softwareTestingResearch/pytest-tcp/issues) or [pull request](https://github.com/softwareTestingResearch/pytest-tcp/pulls) along with a detailed description.
