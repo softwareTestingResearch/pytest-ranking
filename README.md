@@ -50,7 +50,7 @@ All weights must be integers or floats, and the sum of their sum will be normali
 A higher weight means that a corresponding heuristic is favored. The default value is ``1-0-0``, meaning it entirely favors running faster tests.
 
 
-You can also configure the maximum window size of previous test runs to compute the number of runs since a test had failed by additionally passing the optional `--rank-hist-len` flag as an integer input:
+You can also configure the maximum window size of previous test runs to compute the number of runs since a test had failed by additionally passing the optional `--rank-hist-len` flag as an integer input (the default value is 50):
 
 ```bash
 pytest --rank --rank-hist-len=30

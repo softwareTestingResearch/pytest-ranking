@@ -25,6 +25,7 @@ setup(
     description='A Pytest plugin for automatically'
         + ' prioritizing/ranking tests to speed up failure detection',
     long_description=read('README.md'),
+    long_description_content_type='text/markdown',
     packages=find_packages('src'),
     package_dir={'': 'src'},
     py_modules=[splitext(basename(path))[0] for path in glob('src/*.py')],
