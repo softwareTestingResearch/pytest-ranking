@@ -216,7 +216,7 @@ def compute_test_features(
     for report in test_reports:
         nodeid = report.nodeid
         duration = report.duration
-        last_durations[nodeid] = duration
+        last_durations[nodeid] = round(duration, 3)
     config.cache.set(key, last_durations)
 
     # Get number of test runs since last failure
