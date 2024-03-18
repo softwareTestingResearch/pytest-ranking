@@ -80,6 +80,11 @@ and run `pytest --rank` on command line.
 
 You can prompt `pytest-ranking` to run tests in random order, via setting the sum of `--rank-weight` option to 0, e.g., `--rank-weight=0-0-0`.
 You can also configure the seed used when running tests in random order, via setting an integer to the option `--rank-seed`.
+For example, the command below runs tests randomly with seed `1234`:
+
+```bash
+pytest --rank --rank-weight=0-0-0 --rank-seed=1234
+```
 
 
 ### Warning
