@@ -1,6 +1,16 @@
 
 # Changelog
 
+
+0.2.7 (2024-03-18)
+----
+
+* Add option to run tests in random order
+* Improve documentation
+
+
+
+
 0.2.0 (2024-02-16)
 ----
 

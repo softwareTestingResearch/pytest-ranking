@@ -15,7 +15,7 @@ def read(fname):
 
 setup(
     name='pytest-ranking',
-    version='0.2.5',
+    version='0.2.7',
     author='softwareTestingResearch',
     author_email='testingresearch4all@gmail.com',
     maintainer='softwareTestingResearch',
@@ -54,11 +54,11 @@ setup(
         'License :: OSI Approved :: MIT License',
     ],
     keywords=[
-        'pytest',
-        'py.test',
+        'software testing',
+        'regression testing',
         'test prioritization',
-        'test ordering',
-        'test ranking'
+        'test ranking',
+        'pytest',
     ],
     entry_points={
         'pytest11': [

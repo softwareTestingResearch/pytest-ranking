@@ -10,7 +10,7 @@
 
 A Pytest plugin for reducing failure detection time of your Python test suite with automated test prioritization/ranking.
 
-This [pytest](https://github.com/pytest-dev/pytest) plugin allows you to find failures faster and receive sooner debugging feedback from CI. It speed up the failure detection of your test suite by prioritizing the execution of tests that are faster, recently failed and/or more textually related to code change.
+This [pytest](https://github.com/pytest-dev/pytest) plugin allows you to find failures faster and receive sooner debugging feedback from CI. It speed up the failure detection of your test suite by prioritizing the execution of tests that are faster, recently failed and/or related to code change.
 
 ## Installation
 
@@ -45,7 +45,7 @@ You can configure the weights of different prioritization heuristics by passing 
 pytest --rank --rank-weight=0-1-0
 ```
 
-Weights are separated by hyphens ``-``. The 1st weight is for running faster tests, the 2nd weight is for running recently failed tests, and the 3rd weight is for running tests more textually similar to the changed `*.py` files in the codebase since the last run.
+Weights are separated by ``-``. The 1st weight is for running faster tests, the 2nd weight is for running recently failed tests, and the 3rd weight is for running tests related to the changed `*.py` files in the codebase since the last run.
 All weights must be integers or floats, and their sum will be normalized to 1.
 A higher weight means that a corresponding heuristic is favored. The default value is ``1-0-0``, only prioritizes faster tests.
 
@@ -74,6 +74,12 @@ rank_hist_len=30
 ```
 
 and run `pytest --rank` on command line.
+
+
+### Running tests in random order
+
+You can prompt `pytest-ranking` to run tests in random order, via setting the sum of `--rank-weight` option to 0, e.g., `--rank-weight=0-0-0`.
+You can also configure the seed used when running tests in random order, via setting an integer to the option `--rank-seed`.
 
 
 ### Warning

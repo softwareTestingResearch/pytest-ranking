@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import random
 import time
 
 import numpy as np
@@ -12,7 +13,8 @@ from _pytest.main import Session
 from _pytest.nodes import Item
 from _pytest.reports import TestReport
 
-from .plugin_utils import DATA_DIR, DEFAULT_HIST_LEN, DEFAULT_WEIGHT
+from .plugin_utils import (DATA_DIR, DEFAULT_HIST_LEN, DEFAULT_SEED,
+                           DEFAULT_WEIGHT)
 from .relate import changeRelatedness
 
 PLUGIN_HELP = "Run test-case prioritization algorithm for pytest test suite. "\
@@ -34,6 +36,10 @@ WEIGHT_HELP = "Weights to different prioritization heuristics, "\
 HIST_LEN_HELP = "History length, the number of previous test runs used "\
     "to track the number of runs since a test has failed. "\
     "Default is 50 (must be integer)."
+
+SEED_HELP = "Seed when running tests in random order, e.g., "\
+    "You can run random order by passing option `--rank-weight=0-0-0` "\
+    "Default is 1234."
 
 
 def pytest_addoption(parser: Parser) -> None:
@@ -59,8 +65,17 @@ def pytest_addoption(parser: Parser) -> None:
         default=DEFAULT_HIST_LEN,
         help=HIST_LEN_HELP)
 
+    group._addoption(
+        "--rank-seed",
+        action="store",
+        type=int,
+        dest="rank_seed",
+        default=DEFAULT_SEED,
+        help=SEED_HELP)
+
     parser.addini("rank_weight", WEIGHT_HELP, default=DEFAULT_WEIGHT)
     parser.addini("rank_hist_len", HIST_LEN_HELP, default=DEFAULT_HIST_LEN)
+    parser.addini("rank_seed", SEED_HELP, default=DEFAULT_SEED)
 
 
 def tcp_weight_type(string: str) -> str:
@@ -104,6 +119,7 @@ class TCPRunner:
         self.change_rel = changeRelatedness(config)
         self.weights = self.parse_tcp_weights()
         self.hist_len = self.parse_hist_len()
+        self.seed = self.parse_seed()
 
     def parse_tcp_weights(self) -> list[float]:
         """Get weights, non-default CLI overrides ini file input"""
@@ -116,6 +132,8 @@ class TCPRunner:
         weights = weights.split("-")
         weights = [float(w) for w in weights]
         weight_sum = sum(weights)
+        if weight_sum == 0:
+            return [0, 0, 0]
         weights = [w_i / weight_sum for w_i in weights]
         return weights
 
@@ -128,6 +146,14 @@ class TCPRunner:
             hist_len = ini_val if ini_val else hist_len
         self.log['Test prioritization history length'] = hist_len
         return int(hist_len)
+
+    def parse_seed(self) -> int:
+        """Get random seed, non-default CLI overrides ini file input"""
+        rand_seed = self.config.getoption("--rank-seed")
+        if rand_seed == DEFAULT_SEED:
+            ini_val = self.config.getini("rank_seed")
+            rand_seed = ini_val if ini_val else rand_seed
+        return int(rand_seed)
 
     def load_feature_data(
             self,
@@ -160,22 +186,30 @@ class TCPRunner:
         # start ordering tests
         start_time = time.time()
 
-        h_time = self.load_feature_data("last_durations", items, True)
-        h_fail = self.load_feature_data("num_runs_since_fail", items, True)
-        h_rel = self.load_feature_data("change_relatedness", items, False)
-        w_time, w_fail, w_rel = self.weights
+        if self.weights == [0, 0, 0]:
+            random.seed(self.seed)
+            random.shuffle(items)
+            self.log["Test order is set to random with seed"] = self.seed
+        else:
+            w_time, w_fail, w_rel = self.weights
+            h_time = self.load_feature_data("last_durations", items, True)
+            h_fail = self.load_feature_data("num_runs_since_fail", items, True)
+            h_rel = self.load_feature_data("change_relatedness", items, False)
 
-        def rank(i):
-            return h_time[i] * w_time + h_fail[i] * w_fail + h_rel[i] * w_rel
+            def rank(i):
+                s = h_time[i] * w_time + h_fail[i] * w_fail + h_rel[i] * w_rel
+                return s
 
-        # assign priority score to each test by weighted sum
-        # tests with higher priority score are run first: descending sort
-        scores = {item.nodeid: rank(i) for i, item in enumerate(items)}
-        items.sort(
-            key=lambda item: (scores.get(item.nodeid, 0), item.nodeid),
-            reverse=True)
+            # assign priority score to each test by weighted sum
+            # tests with higher priority score are run first: descending sort
+            # ties are broken by alphabetical order (pytest default)
+            scores = {item.nodeid: rank(i) for i, item in enumerate(items)}
+            items.sort(
+                key=lambda item: (scores.get(item.nodeid, 0), item.nodeid),
+                reverse=True)
+
         # log time to compute test order
-        self.log["Test order computation time(s)"] = time.time() - start_time
+        self.log["Test order computation time (s)"] = time.time() - start_time
 
     def pytest_runtest_logreport(self, report: TestReport) -> None:
         """Record test result of each executed test case"""
