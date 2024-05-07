@@ -355,7 +355,7 @@ def test_logging(mytester):
     out.assert_outcomes(passed=2, failed=1)
     # should only log feature computation time
     logging_strings = (
-        "[pytest-ranking] Number of files with new hashes",
+        "[pytest-ranking] Number of *.py files with new hashes",
         "[pytest-ranking] Relatedness computation time (s)",
         "[pytest-ranking] Test prioritization weights",
         "[pytest-ranking] Test order computation time (s)",
@@ -400,7 +400,7 @@ def test_random_order(mytester):
     out.assert_outcomes(passed=2, failed=1)
     # should only log feature computation time
     logging_strings = (
-        "[pytest-ranking] Number of files with new hashes",
+        "[pytest-ranking] Number of *.py files with new hashes",
         "[pytest-ranking] Relatedness computation time (s)",
         "[pytest-ranking] Test prioritization weights",
         "[pytest-ranking] Test order computation time (s)",
