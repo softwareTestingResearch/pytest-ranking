@@ -180,7 +180,7 @@ class TCPRunner:
         """Run test prioritization algorithm"""
         # load code change features
         num_delta_file, compute_time = self.change_rel.run(items)
-        self.log['Number of files with new hashes'] = num_delta_file
+        self.log['Number of *.py files with new hashes'] = num_delta_file
         self.log['Relatedness computation time (s)'] = compute_time
 
         # start ordering tests
@@ -201,7 +201,7 @@ class TCPRunner:
                 return s
 
             # assign priority score to each test by weighted sum
-            # tests with higher priority score are run first: descending sort
+            # tests with higher priority score are run first
             # ties are broken by alphabetical order (pytest default)
             scores = {item.nodeid: rank(i) for i, item in enumerate(items)}
             items.sort(
@@ -215,7 +215,7 @@ class TCPRunner:
         """Record test result of each executed test case"""
         if not report.skipped and report.when == "call":
             # no skipped: only look at the executed test
-            # called: only look at called duration (ignore setup/teardown)
+            # call: only look at called duration (ignore setup/teardown)
             self.test_reports.append(report)
 
     @pytest.hookimpl(trylast=True)

@@ -39,6 +39,9 @@ The terminal output will tell you the current configurations and runtime overhea
 [pytest-ranking] Test order computation time(s): 0.00020933151245117188
 ```
 
+
+### Weighting ranking heuristics
+
 You can configure the weights of different prioritization heuristics by passing the optional `--rank-weight` flag with formatted values:
 
 ```bash
@@ -50,14 +53,29 @@ All weights must be integers or floats, and their sum will be normalized to 1.
 A higher weight means that a corresponding heuristic is favored. The default value is ``1-0-0``, only prioritizes faster tests.
 
 
+### Tracking heuristics from historical runs
+
 You can also configure the maximum window size for looking into previous test runs, which is used to compute the number of runs since a test had failed, by passing the optional `--rank-hist-len` flag (the default value is 50):
 
 ```bash
 pytest --rank --rank-hist-len=30
 ```
 
+Note that the plugin does not store any historical run logs, it merely resets cached ranking heuristics after every `rank-hist-len` number of runs.
 
-You can always apply these options by adding them to the ``addopts`` setting in your [pytest.ini](https://docs.pytest.org/en/latest/reference/customize.html#configuration).
+### Running tests in random order
+
+You can prompt `pytest-ranking` to run tests in random order, via setting the sum of `--rank-weight` option to 0, e.g., `--rank-weight=0-0-0`.
+You can also configure the seed used when running tests in random order, via setting an integer to the option `--rank-seed`.
+For example, the command below runs tests randomly with seed `1234`:
+
+```bash
+pytest --rank --rank-weight=0-0-0 --rank-seed=1234
+```
+
+### Passing plugin options via config file
+
+You can always apply available options by adding them to the ``addopts`` setting in your [pytest.ini](https://docs.pytest.org/en/latest/reference/customize.html#configuration).
 
 For example, create `pytest.ini` in your codebase root folder as such:
 ```ini
@@ -76,21 +94,10 @@ rank_hist_len=30
 and run `pytest --rank` on command line.
 
 
-### Running tests in random order
 
-You can prompt `pytest-ranking` to run tests in random order, via setting the sum of `--rank-weight` option to 0, e.g., `--rank-weight=0-0-0`.
-You can also configure the seed used when running tests in random order, via setting an integer to the option `--rank-seed`.
-For example, the command below runs tests randomly with seed `1234`:
+### Compatibility
 
-```bash
-pytest --rank --rank-weight=0-0-0 --rank-seed=1234
-```
-
-
-### Warning
-
-Because `pytest-ranking` re-orders tests to speed up failure detection time, please disable other pytest plugins that enforeces other test orders, e.g., [pytest-randomly](https://github.com/pytest-dev/pytest-randomly), [pytest-random-order](https://github.com/pytest-dev/pytest-random-order), [pytest-reverse](https://github.com/adamchainz/pytest-reverse).
-
+Because `pytest-ranking` re-orders tests, it is not compatible with other pytest plugins that enforece other test orders, e.g., [pytest-randomly](https://github.com/pytest-dev/pytest-randomly), [pytest-random-order](https://github.com/pytest-dev/pytest-random-order), [pytest-reverse](https://github.com/adamchainz/pytest-reverse).
 
 ## Contributing
 
