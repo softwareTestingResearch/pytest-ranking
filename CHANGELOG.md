@@ -2,6 +2,12 @@
 # Changelog
 
 
+0.2.8 (2024-05-08)
+----
+
+* Make pytest-xdist compatible for random and change-related heuristics
+
+
 0.2.7 (2024-03-18)
 ----
 
