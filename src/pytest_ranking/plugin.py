@@ -13,9 +13,9 @@ from _pytest.main import Session
 from _pytest.nodes import Item
 from _pytest.reports import TestReport
 
+from .change_tracker import changeTracker
 from .plugin_utils import (DATA_DIR, DEFAULT_HIST_LEN, DEFAULT_SEED,
                            DEFAULT_WEIGHT)
-from .relate import changeRelatedness
 
 PLUGIN_HELP = "Run test-case prioritization algorithm for pytest test suite. "\
     "It re-orders execution of tests to expose test failure sooner. "\
@@ -116,10 +116,10 @@ class TCPRunner:
         self.test_reports = []
         # for logging runtime overhead, etc
         self.log = {}
-        self.change_rel = changeRelatedness(config)
         self.weights = self.parse_tcp_weights()
         self.hist_len = self.parse_hist_len()
         self.seed = self.parse_seed()
+        self.chgtracker = changeTracker(config)
 
     def parse_tcp_weights(self) -> list[float]:
         """Get weights, non-default CLI overrides ini file input"""
@@ -179,7 +179,9 @@ class TCPRunner:
     def run_tcp(self, items: list[Item]) -> None:
         """Run test prioritization algorithm"""
         # load code change features
-        num_delta_file, compute_time = self.change_rel.run(items)
+        self.chgtracker.compute_test_suite_relatedness(items)
+        num_delta_file = self.chgtracker.num_delta_files
+        compute_time = self.chgtracker.overhead
         self.log['Number of *.py files with new hashes'] = num_delta_file
         self.log['Relatedness computation time (s)'] = compute_time
 
@@ -187,6 +189,9 @@ class TCPRunner:
         start_time = time.time()
 
         if self.weights == [0, 0, 0]:
+            # fix input test list order for different workers in pytest-xdist
+            items.sort(key=lambda item: item.nodeid, reverse=True)
+            # randomly order with seed so that all workers have the same order
             random.seed(self.seed)
             random.shuffle(items)
             self.log["Test order is set to random with seed"] = self.seed

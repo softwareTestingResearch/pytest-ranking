@@ -16,10 +16,13 @@ def tokenize(string: str) -> list[str]:
     return re.findall(r'[a-zA-Z0-9]+', string.lower())
 
 
-class changeRelatedness:
+class changeTracker:
     def __init__(self, pytest_config: Config) -> None:
         self.pytest_config = pytest_config
-        self.delta = set()
+        # record overhead
+        self.overhead = 0
+        # get the set of changed files
+        self.get_delta()
 
     def get_all_file_paths(self):
         """Get all file paths in the codebase"""
@@ -32,14 +35,15 @@ class changeRelatedness:
         with open(file_path, "rb") as f:
             return hashlib.sha1(f.read()).hexdigest()
 
-    def get_delta(self) -> int:
+    def get_delta(self) -> None:
         """
         Compute hashes for all files,
         get token set for files whose hashes differ or have not been seen,
         those are the changed or new files since last run (delta).
         Save the newest hashes for all files.
-        *Return the number of files to compute hashes
+        *Update the number of files that were re-computed hashes
         """
+        start_time = time.time()
         file_paths = self.get_all_file_paths()
         hashes = {path: self.get_hash(path) for path in file_paths}
 
@@ -51,27 +55,25 @@ class changeRelatedness:
 
         # if hashes are computed for the first time
         if old_hashes == {}:
+            self.overhead += time.time() - start_time
             return len(file_paths)
 
         # get files with a different/new hash since last run
-        num_delta_files = 0
+        self.delta = set()
+        self.num_delta_files = 0
         for path, hash in hashes.items():
             if path not in old_hashes or old_hashes[path] != hash:
                 self.delta = self.delta.union(tokenize(path))
-                num_delta_files += 1
-        return num_delta_files
+                self.num_delta_files += 1
+        self.overhead += time.time() - start_time
 
     def compute_test_suite_relatedness(self, items: list[Item]) -> None:
         """Compute and save relatedness to changed files per test"""
+        start_time = time.time()
         ret = {}
         for item in items:
             test_tokens = set(tokenize(item.nodeid))
             ret[item.nodeid] = len(self.delta.intersection(set(test_tokens)))
         key = os.path.join(DATA_DIR, "change_relatedness")
         self.pytest_config.cache.set(key, ret)
-
-    def run(self, items: list[Item]) -> tuple[int, float]:
-        start_time = time.time()
-        num_delta_file = self.get_delta()
-        self.compute_test_suite_relatedness(items)
-        return num_delta_file, time.time() - start_time
+        self.overhead += time.time() - start_time
