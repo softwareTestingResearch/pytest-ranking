@@ -21,7 +21,8 @@ class changeTracker:
         self.pytest_config = pytest_config
         # record overhead
         self.overhead = 0
-        # get the set of changed files
+        self.delta = set()
+        # get data of the set of changed files
         self.get_delta()
 
     def get_all_file_paths(self):
@@ -59,7 +60,6 @@ class changeTracker:
             return len(file_paths)
 
         # get files with a different/new hash since last run
-        self.delta = set()
         self.num_delta_files = 0
         for path, hash in hashes.items():
             if path not in old_hashes or old_hashes[path] != hash:
