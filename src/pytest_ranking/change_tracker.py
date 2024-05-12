@@ -19,9 +19,9 @@ def tokenize(string: str) -> list[str]:
 class changeTracker:
     def __init__(self, pytest_config: Config) -> None:
         self.pytest_config = pytest_config
-        # record overhead
-        self.overhead = 0
         self.delta = set()
+        self.num_delta_files = 0
+        self.overhead = 0
         # get data of the set of changed files
         self.get_delta()
 
@@ -60,7 +60,6 @@ class changeTracker:
             return len(file_paths)
 
         # get files with a different/new hash since last run
-        self.num_delta_files = 0
         for path, hash in hashes.items():
             if path not in old_hashes or old_hashes[path] != hash:
                 self.delta = self.delta.union(tokenize(path))
