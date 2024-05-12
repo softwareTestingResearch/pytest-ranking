@@ -2,6 +2,12 @@
 # Changelog
 
 
+0.3.0 (2024-05-12)
+----
+
+* Fix attribute initialization in change tracker for Python 3.11 and lower versions
+
+
 0.2.8 (2024-05-08)
 ----
 
