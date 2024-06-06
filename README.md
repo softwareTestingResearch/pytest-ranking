@@ -29,14 +29,16 @@ Pytest will automatically find the plugin and use it when you run ``pytest``. Yo
 pytest --rank
 ```
 
-The terminal output will tell you the current configurations and runtime overhead of this plugin. For example:
+After the test run finishes, the terminal summary will show the config and overhead of running the plugin of the finished run, for example:
 
  ```text
-[pytest-ranking] Weights: 1-1-0
-[pytest-ranking] History length: 30
-[pytest-ranking] Number of files with new hashes: 0
-[pytest-ranking] Change relatedness computation time (s): 0.0007872581481933594
-[pytest-ranking] Test order computation time(s): 0.00020933151245117188
+============================================= pytest-ranking summary info =============================================
+weights: 1-0-0
+look-back history length: 50
+number of *.py src files with new hashes: 0
+test-change similarity compute time (s): 0.00225
+test order compute time (s): 0.00033
+feature collection time (s): 0.00246
 ```
 
 
