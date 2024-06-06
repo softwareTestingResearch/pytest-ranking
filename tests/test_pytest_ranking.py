@@ -59,6 +59,21 @@ source_class_one = \
     """
 
 
+test_put_one = \
+    """
+    import pytest
+
+    @pytest.mark.parametrize("param", {"a", "b", "c", "d"})
+    def test_put_unordered(param):
+        pass
+
+    @pytest.mark.parametrize("param", ["d", "e", 1, 3, "a", "b", " "])
+    def test_put_ordered(param):
+        pass
+
+    """
+
+
 @pytest.fixture
 def mytester(pytester):
     pytester.makefile(
@@ -444,3 +459,15 @@ def test_random_order(mytester):
     )
     # should log feature computation time and tcp ordering time
     assert len([x for x in out.outlines if x.startswith(logging_strings)]) == 1
+
+
+def test_xdist(mytester):
+    """Test the plugin under pytest-xdist (test parallel)"""
+    mytester.makepyfile(
+        test_put_one=test_put_one,
+    )
+
+    args = ["-v", "--rank", "-n", "auto", "--rank-weight=0-0-0"]
+    out = mytester.runpytest(*args)
+    assert len([x for x in out.outlines if x.startswith("ERROR")]) == 0
+    pass
