@@ -12,6 +12,7 @@ from _pytest.config.argparsing import Parser
 from _pytest.main import Session
 from _pytest.nodes import Item
 from _pytest.reports import TestReport
+from _pytest.terminal import TerminalReporter
 
 from .change_tracker import changeTracker
 from .plugin_utils import (DATA_DIR, DEFAULT_HIST_LEN, DEFAULT_SEED,
@@ -27,7 +28,7 @@ WEIGHT_HELP = "Weights to different prioritization heuristics, "\
     "separated by hyphens `-`."\
     "The 1st weight (w1) is for running faster tests, "\
     "the 2nd weight (w2) is for running recently failed tests, "\
-    "the 3rd weight (w3) is for tests more related to changed files. "\
+    "the 3rd weight (w3) is for tests more similar to changed files. "\
     "The sum of weights will be normalized to 1. "\
     "Higher weight means that heuristic will be favored. "\
     "Input format: `w1-w2-w3`. Default value: 1-0-0, meaning it "\
@@ -127,7 +128,7 @@ class TCPRunner:
         if weights == DEFAULT_WEIGHT:
             ini_val = self.config.getini("rank_weight")
             weights = ini_val if ini_val else weights
-        self.log['Test prioritization weights'] = weights
+        self.log['weights'] = weights
 
         weights = weights.split("-")
         weights = [float(w) for w in weights]
@@ -144,7 +145,7 @@ class TCPRunner:
         if hist_len == DEFAULT_HIST_LEN:
             ini_val = self.config.getini("rank_hist_len")
             hist_len = ini_val if ini_val else hist_len
-        self.log['Test prioritization history length'] = hist_len
+        self.log['look-back history length'] = hist_len
         return int(hist_len)
 
     def parse_seed(self) -> int:
@@ -182,8 +183,8 @@ class TCPRunner:
         self.chgtracker.compute_test_suite_relatedness(items)
         num_delta_file = self.chgtracker.num_delta_files
         compute_time = self.chgtracker.overhead
-        self.log['Number of *.py files with new hashes'] = num_delta_file
-        self.log['Relatedness computation time (s)'] = compute_time
+        self.log['number of *.py src files with new hashes'] = num_delta_file
+        self.log['test-change similarity compute time (s)'] = compute_time
 
         # start ordering tests
         start_time = time.time()
@@ -194,7 +195,7 @@ class TCPRunner:
             # randomly order with seed so that all workers have the same order
             random.seed(self.seed)
             random.shuffle(items)
-            self.log["Test order is set to random with seed"] = self.seed
+            self.log["random test order with seed"] = self.seed
         else:
             w_time, w_fail, w_rel = self.weights
             h_time = self.load_feature_data("last_durations", items, True)
@@ -214,7 +215,7 @@ class TCPRunner:
                 reverse=True)
 
         # log time to compute test order
-        self.log["Test order computation time (s)"] = time.time() - start_time
+        self.log["test order compute time (s)"] = time.time() - start_time
 
     def pytest_runtest_logreport(self, report: TestReport) -> None:
         """Record test result of each executed test case"""
@@ -232,17 +233,18 @@ class TCPRunner:
         start_time = time.time()
         compute_test_features(self.config, self.test_reports, self.hist_len)
         # log time for collecting features
-        self.log["Feature collection time (s)"] = time.time() - start_time
+        self.log["feature collection time (s)"] = time.time() - start_time
 
-    def pytest_report_collectionfinish(self) -> list[str]:
-        """
-        Report time to collect TCP data and run TCP, when the plugin is enabled
-        """
-        report = []
+    def pytest_terminal_summary(
+            self, terminalreporter: TerminalReporter,
+            exitstatus: int, config: Config) -> None:
+        """report plugin config and overhead when it is enabled"""
         if self.config.getoption("--rank"):
+            tr = terminalreporter
+            tr._tw.sep("=", "pytest-ranking summary info")
             for k, v in self.log.items():
-                report.append(f"[pytest-ranking] {k}: {v}")
-        return report
+                tr._tw.line(f"{k}: {v}")
+        pass
 
 
 def compute_test_features(

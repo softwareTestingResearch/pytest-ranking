@@ -369,22 +369,29 @@ def test_logging(mytester):
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=2, failed=1)
     # should only log feature computation time
-    logging_strings = (
-        "[pytest-ranking] Number of *.py files with new hashes",
-        "[pytest-ranking] Relatedness computation time (s)",
-        "[pytest-ranking] Test prioritization weights",
-        "[pytest-ranking] Test order computation time (s)",
-        "[pytest-ranking] Test prioritization history length"
+    log_text = (
+        "weights: ",
+        "look-back history length",
+        "number of *.py src files with new hashes",
+        "test-change similarity compute time (s)",
+        "test order compute time (s)",
+        "feature collection time (s)",
     )
 
-    assert len([x for x in out.outlines if x.startswith(logging_strings)]) == 0
+    header = "= pytest-ranking summary info ="
+    assert len([x for x in out.outlines if header in x]) == 0
+    assert len([x for x in out.outlines if x.startswith(log_text)]) == 0
 
     # run with tcp
     args = ["-v", "--rank"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=2, failed=1)
-    # should log feature computation time and tcp ordering time
-    assert len([x for x in out.outlines if x.startswith(logging_strings)]) == 5
+    lines = out.outlines
+    # check log text exists in plugin summary info
+    header = "= pytest-ranking summary info ="
+    idx = [i for i in range(len(lines)) if header in lines[i]]
+    assert len(idx) == 1
+    assert len([x for x in lines[idx[0]:] if x.startswith(log_text)]) == 6
 
 
 def test_invalid_weight(mytester):
@@ -414,51 +421,53 @@ def test_random_order(mytester):
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=2, failed=1)
     # should only log feature computation time
-    logging_strings = (
-        "[pytest-ranking] Number of *.py files with new hashes",
-        "[pytest-ranking] Relatedness computation time (s)",
-        "[pytest-ranking] Test prioritization weights",
-        "[pytest-ranking] Test order computation time (s)",
-        "[pytest-ranking] Test prioritization history length"
+    log_text = (
+        "weights: ",
+        "look-back history length",
+        "number of *.py src files with new hashes",
+        "test-change similarity compute time (s)",
+        "random test order with seed",
+        "test order compute time (s)",
+        "feature collection time (s)",
     )
-    assert len([x for x in out.outlines if x.startswith(logging_strings)]) == 0
+    assert len([x for x in out.outlines if x.startswith(log_text)]) == 0
 
     # run with default tcp
     args = ["-v", "--rank"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=2, failed=1)
     # should log feature computation time and tcp ordering time
-    assert len([x for x in out.outlines if x.startswith(logging_strings)]) == 5
+    assert len([x for x in out.outlines if x.startswith(log_text)]) == 6
 
     # run with tcp with default seed
     args = ["-v", "--rank", "--rank-weight=0-0-0"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=2, failed=1)
-    logging_strings = (
-        "[pytest-ranking] Test order is set to random with seed: 0",
+    log_text = (
+        "random test order with seed: 0",
     )
     # should log feature computation time and tcp ordering time
-    assert len([x for x in out.outlines if x.startswith(logging_strings)]) == 1
+    assert len([x for x in out.outlines if x.startswith(log_text)]) == 1
 
     # run with tcp with default seed
     args = ["-v", "--rank", "--rank-weight=0.0-0.0-0.0"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=2, failed=1)
-    logging_strings = (
-        "[pytest-ranking] Test order is set to random with seed: 0",
+    log_text = (
+        "random test order with seed: 0",
     )
     # should log feature computation time and tcp ordering time
-    assert len([x for x in out.outlines if x.startswith(logging_strings)]) == 1
+    assert len([x for x in out.outlines if x.startswith(log_text)]) == 1
 
     # run with tcp with specific seed
     args = ["-v", "--rank", "--rank-weight=0-0-0", "--rank-seed=1234"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=2, failed=1)
-    logging_strings = (
-        "[pytest-ranking] Test order is set to random with seed: 1234",
+    log_text = (
+        "random test order with seed: 1234",
     )
     # should log feature computation time and tcp ordering time
-    assert len([x for x in out.outlines if x.startswith(logging_strings)]) == 1
+    assert len([x for x in out.outlines if x.startswith(log_text)]) == 1
 
 
 def test_xdist(mytester):

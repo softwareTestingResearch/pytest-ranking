@@ -2,6 +2,11 @@
 # Changelog
 
 
+0.3.1 (2024-06-06)
+----
+
+* add plugin summary via pytest_terminal_summary
+
 0.3.0 (2024-05-12)
 ----
 
