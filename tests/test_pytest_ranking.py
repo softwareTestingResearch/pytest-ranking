@@ -416,13 +416,14 @@ def test_invalid_weight(mytester):
 
 def test_random_order(mytester):
     mytester.makepyfile(
-        test_method_one=test_method_one
+        test_method_one=test_method_one,
+        test_class_one=test_class_one,
     )
 
     # run without tcp
     args = ["-v"]
     out = mytester.runpytest(*args)
-    out.assert_outcomes(passed=2, failed=1)
+    out.assert_outcomes(passed=4, failed=2)
     # should only log feature computation time
     log_text = (
         "weights: ",
@@ -439,14 +440,14 @@ def test_random_order(mytester):
     # run with default tcp
     args = ["-v", "--rank"]
     out = mytester.runpytest(*args)
-    out.assert_outcomes(passed=2, failed=1)
+    out.assert_outcomes(passed=4, failed=2)
     # should log feature computation time and tcp ordering time
     assert len([x for x in out.outlines if x.startswith(log_text)]) == 7
 
     # run with tcp with default seed
     args = ["-v", "--rank", "--rank-weight=0-0-0"]
     out = mytester.runpytest(*args)
-    out.assert_outcomes(passed=2, failed=1)
+    out.assert_outcomes(passed=4, failed=2)
     log_text = (
         "random test order with seed: 0",
     )
@@ -457,7 +458,7 @@ def test_random_order(mytester):
     # run with tcp with default seed
     args = ["-v", "--rank", "--rank-weight=0.0-0.0-0.0"]
     out = mytester.runpytest(*args)
-    out.assert_outcomes(passed=2, failed=1)
+    out.assert_outcomes(passed=4, failed=2)
     log_text = (
         "random test order with seed: 0",
     )
@@ -467,7 +468,7 @@ def test_random_order(mytester):
     # run with tcp with specific seed
     args = ["-v", "--rank", "--rank-weight=0-0-0", "--rank-seed=1234"]
     out = mytester.runpytest(*args)
-    out.assert_outcomes(passed=2, failed=1)
+    out.assert_outcomes(passed=4, failed=2)
     log_text = (
         "random test order with seed: 1234",
     )
