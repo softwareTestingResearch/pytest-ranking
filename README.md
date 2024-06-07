@@ -34,6 +34,7 @@ After the test run finishes, the terminal summary will show the config and overh
  ```text
 ============================================= pytest-ranking summary info =============================================
 weights: 1-0-0
+level: param
 look-back history length: 50
 number of *.py src files with new hashes: 0
 test-change similarity compute time (s): 0.00225
@@ -50,10 +51,20 @@ You can configure the weights of different prioritization heuristics by passing 
 pytest --rank --rank-weight=0-1-0
 ```
 
-Weights are separated by ``-``. The 1st weight is for running faster tests, the 2nd weight is for running recently failed tests, and the 3rd weight is for running tests related to the changed `*.py` files in the codebase since the last run.
+Weights are separated by ``-``. The 1st weight is for running faster tests, the 2nd weight is for running recently failed tests, and the 3rd weight is for running tests more similar to the changed `*.py` files since the last run.
 All weights must be integers or floats, and their sum will be normalized to 1.
 A higher weight means that a corresponding heuristic is favored. The default value is ``1-0-0``, only prioritizes faster tests.
 
+
+### Running in different granularities
+
+You can configure at which granularity your test suite will be re-ordered by passing the optional `--rank-level` flag in one of these values: `param`, `method`, `file`, `folder`. For example:
+
+```bash
+pytest --rank --rank-level=method
+```
+
+The smallest test item that can be re-ordered in the test suite in pytest is [parametrized unit test](https://docs.pytest.org/en/7.1.x/example/parametrize.html) (PUT). `param` ranks each PUT and re-arrange their execution order based on the assigned their ranks;  `method` ranks each test method, parametrized values of that test method will follow pytest's default execution order (alphabetical); `file` ranks each test file, all tests in the test file will follow pytest's default execution order; `folder` ranks each test directory that hosts the test files, all tests hosted in the folder will follow the default order.
 
 ### Tracking heuristics from historical runs
 

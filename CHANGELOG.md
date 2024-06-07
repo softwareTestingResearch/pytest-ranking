@@ -5,6 +5,7 @@
 0.3.1 (2024-06-06)
 ----
 
+* support ranking tests at different granularity levels (PUT, method, file, folder)
 * add plugin summary via pytest_terminal_summary
 
 0.3.0 (2024-05-12)
