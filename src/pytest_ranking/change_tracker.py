@@ -9,7 +9,7 @@ import time
 from _pytest.config import Config
 from _pytest.nodes import Item
 
-from .plugin_utils import DATA_DIR
+from .const import DATA_DIR
 
 
 def tokenize(string: str) -> list[str]:

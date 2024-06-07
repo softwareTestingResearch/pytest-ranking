@@ -32,7 +32,8 @@ setup(
     python_requires='>=3.5',
     install_requires=[
         'pytest>=7.4.3',
-        'numpy'
+        'numpy',
+        'pandas',
     ],
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -57,7 +58,6 @@ setup(
         'software testing',
         'regression testing',
         'test prioritization',
-        'test ranking',
         'pytest',
     ],
     entry_points={

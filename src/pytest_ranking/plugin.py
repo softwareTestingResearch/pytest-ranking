@@ -4,6 +4,7 @@ import argparse
 import os
 import random
 import time
+from enum import Enum
 
 import numpy as np
 import pytest
@@ -15,16 +16,17 @@ from _pytest.reports import TestReport
 from _pytest.terminal import TerminalReporter
 
 from .change_tracker import changeTracker
-from .plugin_utils import (DATA_DIR, DEFAULT_HIST_LEN, DEFAULT_SEED,
-                           DEFAULT_WEIGHT)
+from .const import (DATA_DIR, DEFAULT_HIST_LEN, DEFAULT_LEVEL, DEFAULT_SEED,
+                    DEFAULT_WEIGHT, LEVEL)
+from .rank import get_ranking
 
 PLUGIN_HELP = "Run test-case prioritization algorithm for pytest test suite. "\
     "It re-orders execution of tests to expose test failure sooner. "\
     "Default behavior: runs faster tests first, "\
     "so that more tests are executed per unit time. "\
-    "See more customization in the `--rank-weight` option."
+    "Please see details in the `--rank-weight` option."
 
-WEIGHT_HELP = "Weights to different prioritization heuristics, "\
+WEIGHT_HELP = "Weights to different ordering heuristics, "\
     "separated by hyphens `-`."\
     "The 1st weight (w1) is for running faster tests, "\
     "the 2nd weight (w2) is for running recently failed tests, "\
@@ -32,7 +34,7 @@ WEIGHT_HELP = "Weights to different prioritization heuristics, "\
     "The sum of weights will be normalized to 1. "\
     "Higher weight means that heuristic will be favored. "\
     "Input format: `w1-w2-w3`. Default value: 1-0-0, meaning it "\
-    "entirely favors running faster tests."
+    "runs faster tests."
 
 HIST_LEN_HELP = "History length, the number of previous test runs used "\
     "to track the number of runs since a test has failed. "\
@@ -41,6 +43,13 @@ HIST_LEN_HELP = "History length, the number of previous test runs used "\
 SEED_HELP = "Seed when running tests in random order, e.g., "\
     "You can run random order by passing option `--rank-weight=0-0-0` "\
     "Default is 1234."
+
+LEVEL_HELP = "The level of granularity at which the tests are ordered."\
+    "Test items below the configured level are ordered by "\
+    "default order (alphabetical). For example, with `--rank-level=file`, "\
+    "test methods within a test file are in default order, "\
+    "but each test file are ordered based on the configured --rank-weight, "\
+    "score of a test file is the mean score over all tests in that file."
 
 
 def pytest_addoption(parser: Parser) -> None:
@@ -51,9 +60,17 @@ def pytest_addoption(parser: Parser) -> None:
         help=PLUGIN_HELP)
 
     group._addoption(
+        "--rank-level",
+        action="store",
+        type=level_type,
+        default=DEFAULT_LEVEL,
+        dest="rank_level",
+        help=LEVEL_HELP)
+
+    group._addoption(
         "--rank-weight",
         action="store",
-        type=tcp_weight_type,
+        type=weight_type,
         default=DEFAULT_WEIGHT,
         dest="rank_weight",
         help=WEIGHT_HELP)
@@ -75,11 +92,12 @@ def pytest_addoption(parser: Parser) -> None:
         help=SEED_HELP)
 
     parser.addini("rank_weight", WEIGHT_HELP, default=DEFAULT_WEIGHT)
+    parser.addini("rank_level", LEVEL_HELP, default=DEFAULT_LEVEL)
     parser.addini("rank_hist_len", HIST_LEN_HELP, default=DEFAULT_HIST_LEN)
     parser.addini("rank_seed", SEED_HELP, default=DEFAULT_SEED)
 
 
-def tcp_weight_type(string: str) -> str:
+def weight_type(string: str) -> str:
     """Check weight format"""
     if string == DEFAULT_WEIGHT:
         return string
@@ -92,6 +110,21 @@ def tcp_weight_type(string: str) -> str:
         raise argparse.ArgumentTypeError(
             "Cannot parse input for `--rank-weight`."
             + "Valid examples: 1-0-0, 0.4-0.2-0.2, and 2-7-1."
+        )
+
+
+def level_type(string: str) -> str:
+    "Check level format"
+    if string == DEFAULT_LEVEL:
+        return string
+    try:
+        valid_levels = [i.value for i in LEVEL]
+        assert string in valid_levels
+        return string
+    except AssertionError:
+        raise argparse.ArgumentTypeError(
+            "Invalid input for `--rank-level`."
+            + " Please run `pytest -help` for instruction."
         )
 
 
@@ -118,6 +151,7 @@ class TCPRunner:
         # for logging runtime overhead, etc
         self.log = {}
         self.weights = self.parse_tcp_weights()
+        self.level = self.parse_tcp_level()
         self.hist_len = self.parse_hist_len()
         self.seed = self.parse_seed()
         self.chgtracker = changeTracker(config)
@@ -137,6 +171,15 @@ class TCPRunner:
             return [0, 0, 0]
         weights = [w_i / weight_sum for w_i in weights]
         return weights
+
+    def parse_tcp_level(self) -> Enum:
+        """Get granularity level for ordering"""
+        level = self.config.getoption("--rank-level")
+        if level == DEFAULT_LEVEL:
+            ini_val = self.config.getini("rank_level")
+            level = ini_val if ini_val else level
+        self.log['level'] = level
+        return level
 
     def parse_hist_len(self) -> int:
         """Get history length, non-default CLI overrides ini file input"""
@@ -189,12 +232,15 @@ class TCPRunner:
         # start ordering tests
         start_time = time.time()
 
+        # get initial score per test
+        # test with LOWER score is run first
+        scores = {}
         if self.weights == [0, 0, 0]:
             # fix input test list order for different workers in pytest-xdist
-            items.sort(key=lambda item: item.nodeid, reverse=True)
+            items.sort(key=lambda item: item.nodeid)
             # randomly order with seed so that all workers have the same order
             random.seed(self.seed)
-            random.shuffle(items)
+            scores = {item.nodeid: random.random() for item in items}
             self.log["random test order with seed"] = self.seed
         else:
             w_time, w_fail, w_rel = self.weights
@@ -202,17 +248,16 @@ class TCPRunner:
             h_fail = self.load_feature_data("num_runs_since_fail", items, True)
             h_rel = self.load_feature_data("change_relatedness", items, False)
 
-            def rank(i):
+            def score(i):
+                # make all score negative for sorting ascendingly
+                # ascending for breaking tie in default order (alphabetical)
                 s = h_time[i] * w_time + h_fail[i] * w_fail + h_rel[i] * w_rel
-                return s
+                return -s
 
-            # assign priority score to each test by weighted sum
-            # tests with higher priority score are run first
-            # ties are broken by alphabetical order (pytest default)
-            scores = {item.nodeid: rank(i) for i, item in enumerate(items)}
-            items.sort(
-                key=lambda item: (scores.get(item.nodeid, 0), item.nodeid),
-                reverse=True)
+            scores = {item.nodeid: score(i) for i, item in enumerate(items)}
+
+        ranks = get_ranking(scores, self.level)
+        items.sort(key=lambda item: (ranks.get(item.nodeid, 0), item.nodeid))
 
         # log time to compute test order
         self.log["test order compute time (s)"] = time.time() - start_time
