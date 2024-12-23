@@ -550,6 +550,19 @@ test_c_put = \
     """
 
 
+test_c_put_ordered = \
+    """
+    import pytest
+    import time
+
+    @pytest.mark.parametrize("param", [0.45, 0.25, 0.55, 0.35, 0.15])
+    def test_b_put_ordered(param):
+        time.sleep(param)
+        pass
+
+    """
+
+
 def test_param_level_ranking(mytester):
     mytester.makepyfile(
         test_a_method=test_a_method,
@@ -596,26 +609,22 @@ def test_method_level_ranking(mytester):
     mytester.makepyfile(
         test_a_method=test_a_method,
         test_b_class=test_b_class,
-        test_c_put=test_c_put,
+        test_c_put=test_c_put_ordered,
     )
 
     # run without tcp
     args = ["-v"]
     out = mytester.runpytest(*args)
-    out.assert_outcomes(passed=13, failed=2)
+    out.assert_outcomes(passed=9, failed=2)
 
     # run with tcp
     args = ["-v", "--rank", "--rank-level=method"]
     out = mytester.runpytest(*args)
 
     # assert outcome to be the same as if no tcp
-    out.assert_outcomes(passed=13, failed=2)
+    out.assert_outcomes(passed=9, failed=2)
     out.stdout.fnmatch_lines(
         [
-            "test_c_put.py::test_a_put_unordered[0.1] PASSED",
-            "test_c_put.py::test_a_put_unordered[0.4] PASSED",
-            "test_c_put.py::test_a_put_unordered[0.3] PASSED",
-            "test_c_put.py::test_a_put_unordered[0.2] PASSED",
             "test_c_put.py::test_b_put_ordered[0.45] PASSED",
             "test_c_put.py::test_b_put_ordered[0.25] PASSED",
             "test_c_put.py::test_b_put_ordered[0.55] PASSED",
@@ -637,26 +646,22 @@ def test_file_level_ranking(mytester):
     mytester.makepyfile(
         test_a_method=test_a_method,
         test_b_class=test_b_class,
-        test_c_put=test_c_put,
+        test_c_put=test_c_put_ordered,
     )
 
     # run without tcp
     args = ["-v"]
     out = mytester.runpytest(*args)
-    out.assert_outcomes(passed=13, failed=2)
+    out.assert_outcomes(passed=9, failed=2)
 
     # run with tcp
     args = ["-v", "--rank", "--rank-level=file"]
     out = mytester.runpytest(*args)
 
     # assert outcome to be the same as if no tcp
-    out.assert_outcomes(passed=13, failed=2)
+    out.assert_outcomes(passed=9, failed=2)
     out.stdout.fnmatch_lines(
         [
-            "test_c_put.py::test_a_put_unordered[0.1] PASSED",
-            "test_c_put.py::test_a_put_unordered[0.4] PASSED",
-            "test_c_put.py::test_a_put_unordered[0.3] PASSED",
-            "test_c_put.py::test_a_put_unordered[0.2] PASSED",
             "test_c_put.py::test_b_put_ordered[0.45] PASSED",
             "test_c_put.py::test_b_put_ordered[0.25] PASSED",
             "test_c_put.py::test_b_put_ordered[0.55] PASSED",
@@ -683,25 +688,21 @@ def test_folder_level_ranking(mytester):
         textwrap.dedent(test_b_class))
     b = mytester.mkdir("b")
     b.joinpath("test_c_put.py").write_text(
-        textwrap.dedent(test_c_put))
+        textwrap.dedent(test_c_put_ordered))
 
     # run without tcp
     args = ["-v"]
     out = mytester.runpytest(*args)
-    out.assert_outcomes(passed=13, failed=2)
+    out.assert_outcomes(passed=9, failed=2)
 
     # run with tcp
     args = ["-v", "--rank", "--rank-level=file"]
     out = mytester.runpytest(*args)
 
     # assert outcome to be the same as if no tcp
-    out.assert_outcomes(passed=13, failed=2)
+    out.assert_outcomes(passed=9, failed=2)
     out.stdout.fnmatch_lines(
         [
-            "b/test_c_put.py::test_a_put_unordered[0.1] PASSED",
-            "b/test_c_put.py::test_a_put_unordered[0.4] PASSED",
-            "b/test_c_put.py::test_a_put_unordered[0.3] PASSED",
-            "b/test_c_put.py::test_a_put_unordered[0.2] PASSED",
             "b/test_c_put.py::test_b_put_ordered[0.45] PASSED",
             "b/test_c_put.py::test_b_put_ordered[0.25] PASSED",
             "b/test_c_put.py::test_b_put_ordered[0.55] PASSED",
@@ -761,13 +762,13 @@ def test_method_level_ranking_with_duplicate_methods(mytester):
         test_a_method=test_a_method,
         test_a_method_two=test_a_method_two,
         test_b_class=test_b_class,
-        test_c_put=test_c_put,
+        test_c_put=test_c_put_ordered,
     )
 
     # run without tcp
     args = ["-v"]
     out = mytester.runpytest(*args)
-    out.assert_outcomes(passed=15, failed=3)
+    out.assert_outcomes(passed=11, failed=3)
 
     # run with tcp
     args = ["-v", "--rank", "--rank-level=method"]
@@ -783,10 +784,6 @@ def test_method_level_ranking_with_duplicate_methods(mytester):
             "test_a_method_two.py::test_b_fast_fail FAILED",
             "test_a_method_two.py::test_c_medium PASSED",
             "test_a_method_two.py::test_a_slow PASSED",
-            "test_c_put.py::test_a_put_unordered[0.1] PASSED",
-            "test_c_put.py::test_a_put_unordered[0.4] PASSED",
-            "test_c_put.py::test_a_put_unordered[0.3] PASSED",
-            "test_c_put.py::test_a_put_unordered[0.2] PASSED",
             "test_c_put.py::test_b_put_ordered[0.45] PASSED",
             "test_c_put.py::test_b_put_ordered[0.25] PASSED",
             "test_c_put.py::test_b_put_ordered[0.55] PASSED",
