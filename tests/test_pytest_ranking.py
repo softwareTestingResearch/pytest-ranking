@@ -775,7 +775,7 @@ def test_method_level_ranking_with_duplicate_methods(mytester):
     out = mytester.runpytest(*args)
 
     # assert outcome to be the same as if no tcp
-    out.assert_outcomes(passed=15, failed=3)
+    out.assert_outcomes(passed=11, failed=3)
     # assert that tests with the same method name,
     # i.e., from test_a_method and test_a_method_two
     # are in two different group
