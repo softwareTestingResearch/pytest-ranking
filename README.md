@@ -64,7 +64,7 @@ You can configure at which granularity your test suite will be re-ordered by pas
 pytest --rank --rank-level=method
 ```
 
-The smallest test item that can be re-ordered in the test suite in pytest is [parametrized unit test](https://docs.pytest.org/en/7.1.x/example/parametrize.html) (PUT). `param` ranks each PUT and re-arranges their execution order based on their assigned ranks;  `method` ranks each test method, parametrized values of that test method will follow pytest's default execution order (alphabetical); `file` ranks each test file, all tests in the test file will follow pytest's default execution order; `folder` ranks each test directory that hosts the test files, all tests hosted in the folder will follow the default order.
+The smallest test item that can be re-ordered in the test suite in pytest is [parametrized unit test](https://docs.pytest.org/en/7.1.x/example/parametrize.html) (PUT). `param` ranks each PUT and re-arranges their execution order based on their assigned ranks;  `method` ranks each test method, parametrized values of that test method will follow pytest's default execution order; `file` ranks each test file, all tests in the test file will follow pytest's default execution order; `folder` ranks each test directory that hosts the test files, all tests hosted in the folder will follow the default order.
 
 ### Tracking heuristics from historical runs
 
