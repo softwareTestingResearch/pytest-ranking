@@ -8,19 +8,24 @@ from .const import LEVEL
 
 
 def get_test_group(nodeid: str, level: Enum) -> str:
-    # format: folder/testfile.py::TestClass::testmethod[param1]
+    """Get test group of a PUT at different level.
+
+    Given a PUT folder/testfile.py::TestClass::testmethod[param1]
+        - method: folder/testfile.py::TestClass:testmethod
+        - file: folder/testfile.py
+        - folder: folder
+
+    Otherwise, treat each PUT as a unique test group.
+    """
     test_without_param = nodeid.split("[")[0]
-    prefix = test_without_param.split("::")[0]
-    suffix = test_without_param.split("::")[-1]
-    method = suffix.split("[")[0]
-    file = os.path.basename(prefix)
-    folder = os.path.dirname(prefix)
+    test_file_path = test_without_param.split("::")[0]
+    test_folder = os.path.dirname(test_file_path)
     if level == LEVEL.METHOD:
-        return method
+        return test_without_param
     elif level == LEVEL.FILE:
-        return file
+        return test_file_path
     elif level == LEVEL.FOLDER:
-        return folder
+        return test_folder
     else:
         return nodeid
 

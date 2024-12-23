@@ -610,7 +610,6 @@ def test_method_level_ranking(mytester):
 
     # assert outcome to be the same as if no tcp
     out.assert_outcomes(passed=13, failed=2)
-    # assert faster tests are run first at param level
     out.stdout.fnmatch_lines(
         [
             "test_c_put.py::test_a_put_unordered[0.1] PASSED",
@@ -652,7 +651,6 @@ def test_file_level_ranking(mytester):
 
     # assert outcome to be the same as if no tcp
     out.assert_outcomes(passed=13, failed=2)
-    # assert faster tests are run first at param level
     out.stdout.fnmatch_lines(
         [
             "test_c_put.py::test_a_put_unordered[0.1] PASSED",
@@ -698,7 +696,6 @@ def test_folder_level_ranking(mytester):
 
     # assert outcome to be the same as if no tcp
     out.assert_outcomes(passed=13, failed=2)
-    # assert faster tests are run first at param level
     out.stdout.fnmatch_lines(
         [
             "b/test_c_put.py::test_a_put_unordered[0.1] PASSED",
@@ -735,3 +732,73 @@ def test_invalid_level(mytester):
         + " Invalid input for `--rank-level`." \
         + " Please run `pytest -help` for instruction."
     assert len([x for x in out.errlines if x.startswith(error_msg)]) == 1
+
+
+test_a_method_two = \
+    """
+    import time
+
+    def func(x):
+        return x + 1
+
+    def test_a_slow():
+        time.sleep(0.05)
+        assert func(4) == 5
+
+    # FAIL
+    def test_b_fast_fail():
+        time.sleep(0.01)
+        assert func(3) == 5
+
+    def test_c_medium():
+        time.sleep(0.02)
+        assert func(4) == 5
+    """
+
+
+def test_method_level_ranking_with_duplicate_methods(mytester):
+    mytester.makepyfile(
+        test_a_method=test_a_method,
+        test_a_method_two=test_a_method_two,
+        test_b_class=test_b_class,
+        test_c_put=test_c_put,
+    )
+
+    # run without tcp
+    args = ["-v"]
+    out = mytester.runpytest(*args)
+    out.assert_outcomes(passed=15, failed=3)
+
+    # run with tcp
+    args = ["-v", "--rank", "--rank-level=method"]
+    out = mytester.runpytest(*args)
+
+    # assert outcome to be the same as if no tcp
+    out.assert_outcomes(passed=15, failed=3)
+    # assert that tests with the same method name,
+    # i.e., from test_a_method and test_a_method_two
+    # are in two different group
+    out.stdout.fnmatch_lines(
+        [
+            "test_a_method_two.py::test_b_fast_fail FAILED",
+            "test_a_method_two.py::test_c_medium PASSED",
+            "test_a_method_two.py::test_a_slow PASSED",
+            "test_c_put.py::test_a_put_unordered[0.1] PASSED",
+            "test_c_put.py::test_a_put_unordered[0.2] PASSED",
+            "test_c_put.py::test_a_put_unordered[0.3] PASSED",
+            "test_c_put.py::test_a_put_unordered[0.4] PASSED",
+            "test_c_put.py::test_b_put_ordered[0.15] PASSED",
+            "test_c_put.py::test_b_put_ordered[0.25] PASSED",
+            "test_c_put.py::test_b_put_ordered[0.35] PASSED",
+            "test_c_put.py::test_b_put_ordered[0.45] PASSED",
+            "test_c_put.py::test_b_put_ordered[0.55] PASSED",
+            "test_a_method.py::test_b_fast_fail FAILED",
+            "test_b_class.py::TestClassA::test_a_fast PASSED",
+            "test_a_method.py::test_c_medium PASSED",
+            "test_b_class.py::TestClassA::test_c_medium PASSED",
+            "test_a_method.py::test_a_slow PASSED",
+            "test_b_class.py::TestClassA::test_b_slow_fail FAILED"
+        ],
+        consecutive=True
+    )
+    pass
