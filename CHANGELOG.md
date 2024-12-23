@@ -1,6 +1,11 @@
 
 # Changelog
 
+0.3.2 (2024-12-23)
+----
+
+* refine test group level definition and extraction
+* use pytest test discovery order as default
 
 0.3.1 (2024-06-06)
 ----
