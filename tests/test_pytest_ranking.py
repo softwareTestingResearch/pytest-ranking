@@ -176,8 +176,8 @@ def test_recent_fail_first(mytester):
             "test_method_one.py::test_fast_fail FAILED",
             "test_class_one.py::TestClassSample::test_fast PASSED",
             "test_class_one.py::TestClassSample::test_medium PASSED",
-            "test_method_one.py::test_medium PASSED",
             "test_method_one.py::test_slow PASSED",
+            "test_method_one.py::test_medium PASSED",
          ],
         consecutive=True
     )
@@ -209,7 +209,7 @@ def test_550_weight(mytester):
             "test_class_one.py::TestClassSample::test_fast PASSED",
             "test_method_one.py::test_medium PASSED",
             "test_class_one.py::TestClassSample::test_medium PASSED",
-            "test_method_one.py::test_slow PASSED"
+            "test_method_one.py::test_slow PASSED",
         ],
         consecutive=True
     )
@@ -256,12 +256,12 @@ def test_001_028_weight(mytester):
     # assert tests more related to the change are run first
     out.stdout.fnmatch_lines(
         [
+            "test_method_one.py::test_slow PASSED",
             "test_method_one.py::test_fast_fail FAILED",
             "test_method_one.py::test_medium PASSED",
-            "test_method_one.py::test_slow PASSED",
             "test_class_one.py::TestClassSample::test_fast PASSED",
-            "test_class_one.py::TestClassSample::test_medium PASSED",
             "test_class_one.py::TestClassSample::test_slow_fail FAILED",
+            "test_class_one.py::TestClassSample::test_medium PASSED",
         ],
         consecutive=True
     )
@@ -279,8 +279,8 @@ def test_001_028_weight(mytester):
             "test_class_one.py::TestClassSample::test_fast PASSED",
             "test_class_one.py::TestClassSample::test_medium PASSED",
             "test_method_one.py::test_fast_fail FAILED",
-            "test_method_one.py::test_medium PASSED",
             "test_method_one.py::test_slow PASSED",
+            "test_method_one.py::test_medium PASSED",
         ],
         consecutive=True
     )
@@ -350,8 +350,8 @@ def test_208_093_weight(mytester):
             "test_method_one.py::test_fast_fail FAILED",
             "test_class_one.py::TestClassSample::test_fast PASSED",
             "test_class_one.py::TestClassSample::test_medium PASSED",
-            "test_method_one.py::test_medium PASSED",
             "test_method_one.py::test_slow PASSED",
+            "test_method_one.py::test_medium PASSED",
         ],
         consecutive=True
     )
@@ -613,20 +613,20 @@ def test_method_level_ranking(mytester):
     out.stdout.fnmatch_lines(
         [
             "test_c_put.py::test_a_put_unordered[0.1] PASSED",
-            "test_c_put.py::test_a_put_unordered[0.2] PASSED",
-            "test_c_put.py::test_a_put_unordered[0.3] PASSED",
             "test_c_put.py::test_a_put_unordered[0.4] PASSED",
-            "test_c_put.py::test_b_put_ordered[0.15] PASSED",
-            "test_c_put.py::test_b_put_ordered[0.25] PASSED",
-            "test_c_put.py::test_b_put_ordered[0.35] PASSED",
+            "test_c_put.py::test_a_put_unordered[0.3] PASSED",
+            "test_c_put.py::test_a_put_unordered[0.2] PASSED",
             "test_c_put.py::test_b_put_ordered[0.45] PASSED",
+            "test_c_put.py::test_b_put_ordered[0.25] PASSED",
             "test_c_put.py::test_b_put_ordered[0.55] PASSED",
+            "test_c_put.py::test_b_put_ordered[0.35] PASSED",
+            "test_c_put.py::test_b_put_ordered[0.15] PASSED",
             "test_a_method.py::test_b_fast_fail FAILED",
             "test_b_class.py::TestClassA::test_a_fast PASSED",
             "test_a_method.py::test_c_medium PASSED",
             "test_b_class.py::TestClassA::test_c_medium PASSED",
             "test_a_method.py::test_a_slow PASSED",
-            "test_b_class.py::TestClassA::test_b_slow_fail FAILED"
+            "test_b_class.py::TestClassA::test_b_slow_fail FAILED",
         ],
         consecutive=True
     )
@@ -654,20 +654,20 @@ def test_file_level_ranking(mytester):
     out.stdout.fnmatch_lines(
         [
             "test_c_put.py::test_a_put_unordered[0.1] PASSED",
-            "test_c_put.py::test_a_put_unordered[0.2] PASSED",
-            "test_c_put.py::test_a_put_unordered[0.3] PASSED",
             "test_c_put.py::test_a_put_unordered[0.4] PASSED",
-            "test_c_put.py::test_b_put_ordered[0.15] PASSED",
-            "test_c_put.py::test_b_put_ordered[0.25] PASSED",
-            "test_c_put.py::test_b_put_ordered[0.35] PASSED",
+            "test_c_put.py::test_a_put_unordered[0.3] PASSED",
+            "test_c_put.py::test_a_put_unordered[0.2] PASSED",
             "test_c_put.py::test_b_put_ordered[0.45] PASSED",
+            "test_c_put.py::test_b_put_ordered[0.25] PASSED",
             "test_c_put.py::test_b_put_ordered[0.55] PASSED",
+            "test_c_put.py::test_b_put_ordered[0.35] PASSED",
+            "test_c_put.py::test_b_put_ordered[0.15] PASSED",
             "test_a_method.py::test_a_slow PASSED",
             "test_a_method.py::test_b_fast_fail FAILED",
             "test_a_method.py::test_c_medium PASSED",
             "test_b_class.py::TestClassA::test_a_fast PASSED",
             "test_b_class.py::TestClassA::test_b_slow_fail FAILED",
-            "test_b_class.py::TestClassA::test_c_medium PASSED"
+            "test_b_class.py::TestClassA::test_c_medium PASSED",
         ],
         consecutive=True
     )
@@ -699,20 +699,20 @@ def test_folder_level_ranking(mytester):
     out.stdout.fnmatch_lines(
         [
             "b/test_c_put.py::test_a_put_unordered[0.1] PASSED",
-            "b/test_c_put.py::test_a_put_unordered[0.2] PASSED",
-            "b/test_c_put.py::test_a_put_unordered[0.3] PASSED",
             "b/test_c_put.py::test_a_put_unordered[0.4] PASSED",
-            "b/test_c_put.py::test_b_put_ordered[0.15] PASSED",
-            "b/test_c_put.py::test_b_put_ordered[0.25] PASSED",
-            "b/test_c_put.py::test_b_put_ordered[0.35] PASSED",
+            "b/test_c_put.py::test_a_put_unordered[0.3] PASSED",
+            "b/test_c_put.py::test_a_put_unordered[0.2] PASSED",
             "b/test_c_put.py::test_b_put_ordered[0.45] PASSED",
+            "b/test_c_put.py::test_b_put_ordered[0.25] PASSED",
             "b/test_c_put.py::test_b_put_ordered[0.55] PASSED",
+            "b/test_c_put.py::test_b_put_ordered[0.35] PASSED",
+            "b/test_c_put.py::test_b_put_ordered[0.15] PASSED",
             "a/test_a_method.py::test_a_slow PASSED",
             "a/test_a_method.py::test_b_fast_fail FAILED",
             "a/test_a_method.py::test_c_medium PASSED",
             "a/test_b_class.py::TestClassA::test_a_fast PASSED",
             "a/test_b_class.py::TestClassA::test_b_slow_fail FAILED",
-            "a/test_b_class.py::TestClassA::test_c_medium PASSED"
+            "a/test_b_class.py::TestClassA::test_c_medium PASSED",
         ],
         consecutive=True
     )
@@ -784,20 +784,20 @@ def test_method_level_ranking_with_duplicate_methods(mytester):
             "test_a_method_two.py::test_c_medium PASSED",
             "test_a_method_two.py::test_a_slow PASSED",
             "test_c_put.py::test_a_put_unordered[0.1] PASSED",
-            "test_c_put.py::test_a_put_unordered[0.2] PASSED",
-            "test_c_put.py::test_a_put_unordered[0.3] PASSED",
             "test_c_put.py::test_a_put_unordered[0.4] PASSED",
-            "test_c_put.py::test_b_put_ordered[0.15] PASSED",
-            "test_c_put.py::test_b_put_ordered[0.25] PASSED",
-            "test_c_put.py::test_b_put_ordered[0.35] PASSED",
+            "test_c_put.py::test_a_put_unordered[0.3] PASSED",
+            "test_c_put.py::test_a_put_unordered[0.2] PASSED",
             "test_c_put.py::test_b_put_ordered[0.45] PASSED",
+            "test_c_put.py::test_b_put_ordered[0.25] PASSED",
             "test_c_put.py::test_b_put_ordered[0.55] PASSED",
+            "test_c_put.py::test_b_put_ordered[0.35] PASSED",
+            "test_c_put.py::test_b_put_ordered[0.15] PASSED",
             "test_a_method.py::test_b_fast_fail FAILED",
             "test_b_class.py::TestClassA::test_a_fast PASSED",
             "test_a_method.py::test_c_medium PASSED",
             "test_b_class.py::TestClassA::test_c_medium PASSED",
             "test_a_method.py::test_a_slow PASSED",
-            "test_b_class.py::TestClassA::test_b_slow_fail FAILED"
+            "test_b_class.py::TestClassA::test_b_slow_fail FAILED",
         ],
         consecutive=True
     )

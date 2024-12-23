@@ -50,7 +50,7 @@ def get_ranking(scores: dict, level: Enum, init_order: dict) -> dict:
     }
     # Sort tests by its aggregated group score,
     # break tie by default order.
-    tests.sort(key=lambda x: (agg_group_scores[x[2]], x[0]))
+    tests.sort(key=lambda x: (agg_group_scores[x[2]], init_order[x[0]]))
     return {
         nodeid: rank
         for rank, (nodeid, score, group) in enumerate(tests)

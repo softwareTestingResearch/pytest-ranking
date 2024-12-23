@@ -259,7 +259,11 @@ class TCPRunner:
             scores = {item.nodeid: score(i) for i, item in enumerate(items)}
 
         ranks = get_ranking(scores, self.level, init_order)
-        items.sort(key=lambda item: (ranks.get(item.nodeid, 0), item.nodeid))
+        items.sort(
+            key=lambda item: (
+                ranks.get(item.nodeid, 0), init_order[item.nodeid]
+            )
+        )
 
         # log time to compute test order
         self.log["test order compute time (s)"] = time.time() - start_time
