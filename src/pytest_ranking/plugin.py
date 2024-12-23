@@ -222,6 +222,8 @@ class TCPRunner:
 
     def run_tcp(self, items: list[Item]) -> None:
         """Run test prioritization algorithm"""
+        # get initial order from pytest, i.e., by discovery order of the tests
+        init_order = {item.nodeid: i for i, item in enumerate(items)}
         # load code change features
         self.chgtracker.compute_test_suite_relatedness(items)
         num_delta_file = self.chgtracker.num_delta_files
@@ -256,7 +258,7 @@ class TCPRunner:
 
             scores = {item.nodeid: score(i) for i, item in enumerate(items)}
 
-        ranks = get_ranking(scores, self.level)
+        ranks = get_ranking(scores, self.level, init_order)
         items.sort(key=lambda item: (ranks.get(item.nodeid, 0), item.nodeid))
 
         # log time to compute test order

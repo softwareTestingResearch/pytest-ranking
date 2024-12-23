@@ -33,7 +33,6 @@ setup(
     install_requires=[
         'pytest>=7.4.3',
         'numpy',
-        'pandas',
     ],
     classifiers=[
         'Development Status :: 4 - Beta',

@@ -1,7 +1,8 @@
+import collections
 import os
 from enum import Enum
 
-import pandas as pd
+import numpy as np
 
 from .const import LEVEL
 
@@ -24,18 +25,28 @@ def get_test_group(nodeid: str, level: Enum) -> str:
         return nodeid
 
 
-def get_ranking(scores: dict, level: Enum) -> dict:
+def get_ranking(scores: dict, level: Enum, init_order: dict) -> dict:
     """
     scores: a map between test nodeid to its score
     return ranking of tests by test nodeid
     """
-    df = pd.DataFrame(
-        data=[[k, v] for k, v in scores.items()],
-        columns=["nodeid", "score"])
-    df["group"] = df["nodeid"].apply(lambda x: get_test_group(x, level))
-    agg_df = df[["group", "score"]].groupby(["group"]).mean().reset_index()
-    agg_df = agg_df.rename(columns={"score": "agg_score"})
-    df = pd.merge(df, agg_df, "left", ["group"])
-    df = df.sort_values(by=["agg_score", "nodeid"], ascending=True)
-    nodeids = df["nodeid"].values.tolist()
-    return {nodeid: rank for rank, nodeid in enumerate(nodeids)}
+    # Get test groups.
+    tests = []
+    for nodeid, score in scores.items():
+        group = get_test_group(nodeid, level)
+        tests.append([nodeid, score, group])
+    # Get aggregated score (mean) per group.
+    group_scores = collections.defaultdict(list)
+    for _, score, group in tests:
+        group_scores[group].append(score)
+    agg_group_scores = {
+        group: np.mean(score_list)
+        for group, score_list in group_scores.items()
+    }
+    # Sort tests by its aggregated group score,
+    # break tie by default order.
+    tests.sort(key=lambda x: (agg_group_scores[x[2]], x[0]))
+    return {
+        nodeid: rank
+        for rank, (nodeid, score, group) in enumerate(tests)
+    }

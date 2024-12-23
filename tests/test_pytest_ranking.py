@@ -170,7 +170,6 @@ def test_recent_fail_first(mytester):
 
     # assert outcome to be the same as if no tcp
     out.assert_outcomes(passed=4, failed=2)
-    # assert faster tests are run first
     out.stdout.fnmatch_lines(
         [
             "test_class_one.py::TestClassSample::test_slow_fail FAILED",
@@ -203,7 +202,6 @@ def test_550_weight(mytester):
 
     # assert outcome to be the same as if no tcp
     out.assert_outcomes(passed=4, failed=2)
-    # assert faster tests are run first
     out.stdout.fnmatch_lines(
         [
             "test_method_one.py::test_fast_fail FAILED",
@@ -236,7 +234,6 @@ def test_001_028_weight(mytester):
 
     # assert outcome to be the same as if no tcp
     out.assert_outcomes(passed=4, failed=2)
-    # assert faster tests are run first
     out.stdout.fnmatch_lines(
         [
             "test_method_one.py::test_fast_fail FAILED",
@@ -276,7 +273,6 @@ def test_001_028_weight(mytester):
 
     # assert outcome to be the same as if no tcp
     out.assert_outcomes(passed=4, failed=2)
-    # assert faster tests are run first
     out.stdout.fnmatch_lines(
         [
             "test_class_one.py::TestClassSample::test_slow_fail FAILED",
