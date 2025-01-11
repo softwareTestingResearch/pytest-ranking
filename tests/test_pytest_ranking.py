@@ -799,3 +799,90 @@ def test_method_level_ranking_with_duplicate_methods(mytester):
         consecutive=True
     )
     pass
+
+
+test_order = \
+    """
+    import pytest
+    import time
+    @pytest.mark.order(2)
+    def test_foo():
+        time.sleep(4.5)
+        assert True
+
+    @pytest.mark.order(1)
+    def test_bar():
+        time.sleep(5)
+        assert True
+    """
+
+test_dependency = \
+    """
+    import pytest
+    import time
+
+    @pytest.mark.dependency()
+    @pytest.mark.xfail(reason="deliberate fail")
+    def test_a():
+        time.sleep(4)
+        assert False
+
+    @pytest.mark.dependency()
+    def test_b():
+        time.sleep(3.5)
+        pass
+
+    @pytest.mark.dependency(depends=["test_a"])
+    def test_c():
+        time.sleep(3)
+        pass
+
+    @pytest.mark.dependency(depends=["test_b"])
+    def test_d():
+        time.sleep(2.5)
+        pass
+
+    @pytest.mark.dependency(depends=["test_b", "test_c"])
+    def test_e():
+        time.sleep(2)
+        pass
+    """
+
+
+def test_order_dependency_marker(mytester):
+    mytester.makepyfile(
+        test_a_method=test_a_method,
+        test_order=test_order,
+        test_dependency=test_dependency,
+    )
+
+    # run without tcp
+    args = ["-v"]
+    out = mytester.runpytest(*args)
+    out.assert_outcomes(passed=8, failed=1, xfailed=1)
+
+    # run with tcp
+    args = ["-v", "--rank"]
+    out = mytester.runpytest(*args)
+
+    # assert outcome to be the same as if no tcp
+    out.assert_outcomes(passed=8, failed=1, xfailed=1)
+    # assert that tests with the same method name,
+    # i.e., from test_a_method and test_a_method_two
+    # are in two different group
+    out.stdout.fnmatch_lines(
+        [
+            "test_order.py::test_bar PASSED",
+            "test_order.py::test_foo PASSED",
+            "test_dependency.py::test_a XFAIL (deliberate fail)",
+            "test_dependency.py::test_b PASSED",
+            "test_dependency.py::test_c PASSED",
+            "test_dependency.py::test_d PASSED",
+            "test_dependency.py::test_e PASSED",
+            "test_a_method.py::test_b_fast_fail FAILED",
+            "test_a_method.py::test_c_medium PASSED",
+            "test_a_method.py::test_a_slow PASSED",
+        ],
+        consecutive=True
+    )
+    pass

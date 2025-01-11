@@ -259,11 +259,28 @@ class TCPRunner:
             scores = {item.nodeid: score(i) for i, item in enumerate(items)}
 
         ranks = get_ranking(scores, self.level, init_order)
-        items.sort(
+
+        # Handle tests with declared order dependency (OD).
+        od_items: list[Item] = []
+        nod_items: list[Item] = []
+        for item in items:
+            # For https://github.com/pytest-dev/pytest-order
+            # For https://github.com/RKrahl/pytest-dependency
+            if (
+                item.get_closest_marker('order')
+                or item.get_closest_marker('dependency')
+            ):
+                od_items.append(item)
+            else:
+                nod_items.append(item)
+        # Only reorder tests with no declared OD.
+        nod_items.sort(
             key=lambda item: (
                 ranks.get(item.nodeid, 0), init_order[item.nodeid]
             )
         )
+        # Run OD tests first.
+        items[:] = od_items + nod_items
 
         # log time to compute test order
         self.log["test order compute time (s)"] = time.time() - start_time
