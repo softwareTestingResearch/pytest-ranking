@@ -872,13 +872,13 @@ def test_order_dependency_marker(mytester):
     # are in two different group
     out.stdout.fnmatch_lines(
         [
-            "test_order.py::test_bar PASSED",
-            "test_order.py::test_foo PASSED",
             "test_dependency.py::test_a XFAIL (deliberate fail)",
             "test_dependency.py::test_b PASSED",
             "test_dependency.py::test_c PASSED",
             "test_dependency.py::test_d PASSED",
             "test_dependency.py::test_e PASSED",
+            "test_order.py::test_bar PASSED",
+            "test_order.py::test_foo PASSED",
             "test_a_method.py::test_b_fast_fail FAILED",
             "test_a_method.py::test_c_medium PASSED",
             "test_a_method.py::test_a_slow PASSED",
