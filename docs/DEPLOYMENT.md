@@ -1,9 +1,18 @@
 # Deployment
 
+## Using pytest-rtp in fixed location
+
+If your CI runs different test builds in a fixed location, e.g., a project folder in specific machine, you can directly use `pytest-rtp` after installation without additional setup.
+
+## Using pytest-rtp in Github Actions
+
+If your CI workflow always starts a new virtual machine to run a test build, you need to set up the CI to be able to pass `pytest` cache data across test builds.
+Here, we use GitHub Actions as an example.
+
 ### Add pytest-rtp to project dependency
 
 
-You can add pytest-rtp as a dependency by adding a installation job before the job that runs `pytest ...` (a job is often specified by `-name: `) in the workflow file:
+You can add `pytest-rtp` as a dependency by adding a installation job before the job that runs `pytest ...` (a job is often specified by `-name: `) in the workflow file:
 
 ```yml
     - name: Install pytest-rtp related
