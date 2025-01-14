@@ -1,51 +1,51 @@
 # Deployment
 
-## Using pytest-rtp in fixed location
+## Using pytest-ranking in fixed location
 
-If your CI runs different test builds in a fixed location, e.g., a project folder in specific machine, you can directly use `pytest-rtp` after installation without additional setup.
+If your CI runs different test builds in a fixed location, e.g., a project folder in specific machine, you can directly use `pytest-ranking` after installation without additional setup.
 
-## Using pytest-rtp in Github Actions
+## Using pytest-ranking in Github Actions
 
 If your CI workflow always starts a new virtual machine to run a test build, you need to set up the CI to be able to pass `pytest` cache data across test builds.
 Here, we use GitHub Actions as an example.
 
-### Add pytest-rtp to project dependency
+### Add pytest-ranking to project dependency
 
 
-You can add `pytest-rtp` as a dependency by adding a installation job before the job that runs `pytest ...` (a job is often specified by `-name: `) in the workflow file:
+You can add `pytest-ranking` as a dependency by adding a installation job before the job that runs `pytest ...` (a job is often specified by `-name: `) in the workflow file:
 
 ```yml
-    - name: Install pytest-rtp related
-      run: pip install pytest-rtp
+    - name: Install pytest-ranking related
+      run: pip install pytest-ranking
 ```
 
-Alternatively, depending on where the forked project puts its dependency, e.g., can be in `setup.py`, `pyproejct.toml`, you can also add the `pytest-rtp` to the build/test dependency, but best not to specify version.
+Alternatively, depending on where the forked project puts its dependency, e.g., can be in `setup.py`, `pyproejct.toml`, you can also add the `pytest-ranking` to the build/test dependency, but best not to specify version.
 
 
 #### If the project uses `Tox`
 
-Add `pytest-rtp` to the `deps` of `[testenv]` in `./tox.ini`:
+Add `pytest-ranking` to the `deps` of `[testenv]` in `./tox.ini`:
 ```ini
 [testenv]
 deps =
   ; ...
-  pytest-rtp
+  pytest-ranking
   pytest-json-report
 ```
 
 
 ### Setup pytest_cache
 
-Before the job in the workflow file that runs the `pytest ...` but after the `pytest-rtp` installation job, add the job that restores cache from the latest run if such run exists:
+Before the job in the workflow file that runs the `pytest ...` but after the `pytest-ranking` installation job, add the job that restores cache from the latest run if such run exists:
 
 ```yml
-    - name: Restore pytest-rtp cache
-      id: restore-pytest-rtp-cache
+    - name: Restore pytest-ranking cache
+      id: restore-pytest-ranking-cache
       if: always()
       uses: actions/cache/restore@v4
       with:
-        path: ${{ github.workspace }}/.pytest_cache/v/pytest_rtp_data
-        key: pytest-rtp-cache-${{ github.workflow }}-${{ runner.os }}-${{ matrix.python }}
+        path: ${{ github.workspace }}/.pytest_cache/v/pytest_ranking_data
+        key: pytest-ranking-cache-${{ github.workflow }}-${{ runner.os }}-${{ matrix.python }}
     # --------below is the job for running pytest
     -name: pytest
         ...
@@ -57,13 +57,13 @@ And after the job that runs `pytest ...` command, add the job that caches result
     -name: pytest
         ...
     # --------above is the job for running pytest
-    - name: Save pytest-rtp cache
-      id: save-pytest-rtp-cache
+    - name: Save pytest-ranking cache
+      id: save-pytest-ranking-cache
       if: always()
       uses: actions/cache/save@v4
       with:
-        path: ${{ github.workspace }}/.pytest_cache/v/pytest_rtp_data
-        key: pytest-rtp-cache-${{ github.workflow }}-${{ runner.os }}-${{ matrix.python }}-${{ github.run_id }}
+        path: ${{ github.workspace }}/.pytest_cache/v/pytest_ranking_data
+        key: pytest-ranking-cache-${{ github.workflow }}-${{ runner.os }}-${{ matrix.python }}-${{ github.run_id }}
 ```
 
 #### If the project uses `Tox`
@@ -76,4 +76,4 @@ cachedir: .tox/TOX_ENV_NAME/.pytest_cache
 ...
 ```
 
-The `cachedir` is what we are looking for. In this example, we need to replace `path: ${{ github.workspace }}/.pytest_cache/v/pytest_rtp_data` into `path: ${{ github.workspace }}/.tox/TOX_ENV_NAME/v/pytest_rtp_data` in both the `restore` and `save` cache jobs above in the workflow file.
+The `cachedir` is what we are looking for. In this example, we need to replace `path: ${{ github.workspace }}/.pytest_cache/v/pytest_ranking_data` into `path: ${{ github.workspace }}/.tox/TOX_ENV_NAME/v/pytest_ranking_data` in both the `restore` and `save` cache jobs above in the workflow file.
