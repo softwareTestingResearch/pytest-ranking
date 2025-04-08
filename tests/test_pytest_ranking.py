@@ -438,7 +438,7 @@ def test_random_order(mytester):
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=4, failed=2)
     # should log feature computation time and tcp ordering time
-    assert len([x for x in out.outlines if x.startswith(log_text)]) == 7
+    assert len([x for x in out.outlines if x.startswith(log_text)]) == 8
 
     # run with tcp with default seed
     args = ["-v", "--rank", "--rank-weight=0-0-0"]
