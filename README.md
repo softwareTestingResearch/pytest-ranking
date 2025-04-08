@@ -32,17 +32,24 @@ You can run `pytest-ranking` with its default configuration, which runs faster t
 pytest --rank
 ```
 
+Before the test run starts, if `--rank` is passed, the terminal header will report `pytest-ranking`'s configuration of this run, for example:
+```text
+Using --rank-weight=0-0-0
+Using --rank-level=put
+Using --rank-hist-len=50
+Using --rank-seed=1744140050
+Using --rank-replay=None
+```
+
+
 After the test run finishes, the terminal summary will show the configuration and overhead of `pytest-ranking` in this run, for example:
 
  ```text
 ============================================= pytest-ranking summary info =============================================
-weights: 1-0-0
-level: param
-look-back history length: 50
-number of *.py src files with new hashes: 0
-test-change similarity compute time (s): 0.00225
-test order compute time (s): 0.00033
-feature collection time (s): 0.00246
+Number of changed Python files: 0
+Time to compute test-change similarity (s): 0.000865936279296875
+Time to reorder tests (s): 0.0003600120544433594
+Time to collect test features (s): 0.0004608631134033203
 ```
 
 
@@ -59,7 +66,9 @@ pytest --rank --rank-weight=0-1-0
     - The second weight is for running recently failed tests
     - The third weight is for running tests more similar to the changed `*.py` files since the last run
 - All weights must be integers or floats, and their sum will be normalized to 1
-- A higher weight means that a corresponding heuristic is favored. The default value is ``1-0-0``, which only prioritizes faster tests
+- A higher weight means that a corresponding heuristic is favored.
+
+The default value is ``1-0-0``, which only prioritizes faster tests
 
 
 ### Optimizing test prioritization levels
@@ -77,15 +86,27 @@ pytest --rank --rank-level=function
     - `module` reorders each test file, all tests in the test file follow their default order
     - `dir` reorders each test directory, all tests within each directory follow their default order
 
+The default value is `put`.
+
+
+### Replaying specified test order
+
+You can run/replay tests in a specific order by listing the to-be-run test IDs in a text file, where each line is a test ID, and pass the file path to the optional `--rank-replay` flag:
+
+```bash
+pytest --rank --rank-replay=replay_order.txt
+```
+
 
 ### Tracking heuristics from historical runs
 
-You can also set the maximum value of *the number test runs since a test's last failure* that could be recorded for each test, by passing the optional `--rank-hist-len` flag (the default value is 50):
+You can also set the maximum value of *the number test runs since a test's last failure* that could be recorded for each test, by passing the optional `--rank-hist-len` flag:
 
 ```bash
 pytest --rank --rank-hist-len=30
 ```
 
+The default value is 50.
 Note that the plugin does not store any historical run logs, it merely resets cached ranking heuristics after every `rank-hist-len` number of runs.
 
 ### Running tests in random order
