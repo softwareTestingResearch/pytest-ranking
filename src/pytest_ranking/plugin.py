@@ -17,8 +17,8 @@ from _pytest.reports import TestReport
 from _pytest.terminal import TerminalReporter
 
 from .change_tracker import changeTracker
-from .const import (DATA_DIR, DEFAULT_HIST_LEN, DEFAULT_LEVEL, DEFAULT_SEED,
-                    DEFAULT_WEIGHT, LEVEL)
+from .const import (DATA_DIR, DEFAULT_HIST_LEN, DEFAULT_LEVEL, DEFAULT_REPLAY,
+                    DEFAULT_SEED, DEFAULT_WEIGHT, LEVEL)
 from .rank import get_ranking
 
 PLUGIN_HELP = textwrap.dedent("""\
@@ -54,6 +54,12 @@ Score of a test group is the mean score over all tests in that group.
 Default value is PUT.
 """)
 
+REPLAY_HELP = textwrap.dedent("""
+Provide a text file where each line is a test ID.
+pytest-ranking will run tests with the order defined in the file.
+Default value is None.
+""")
+
 
 def pytest_addoption(parser: Parser) -> None:
     group = parser.getgroup("rank", "pytest-ranking")
@@ -79,6 +85,14 @@ def pytest_addoption(parser: Parser) -> None:
         help=WEIGHT_HELP)
 
     group._addoption(
+        "--rank-replay",
+        action="store",
+        type=replay_type,
+        default=DEFAULT_REPLAY,
+        dest="rank_replay",
+        help=REPLAY_HELP)
+
+    group._addoption(
         "--rank-hist-len",
         action="store",
         type=int,
@@ -95,6 +109,7 @@ def pytest_addoption(parser: Parser) -> None:
         help=SEED_HELP)
 
     parser.addini("rank_weight", WEIGHT_HELP, default=DEFAULT_WEIGHT)
+    parser.addini("rank_replay", REPLAY_HELP, default=DEFAULT_REPLAY)
     parser.addini("rank_level", LEVEL_HELP, default=DEFAULT_LEVEL)
     parser.addini("rank_hist_len", HIST_LEN_HELP, default=DEFAULT_HIST_LEN)
     parser.addini("rank_seed", SEED_HELP, default=DEFAULT_SEED)
@@ -127,7 +142,22 @@ def level_type(string: str) -> str:
     except AssertionError:
         raise argparse.ArgumentTypeError(
             "Invalid input for `--rank-level`."
-            + " Please run `pytest -help` for instruction."
+            + " Please run `pytest --help` for instruction."
+        )
+
+
+def replay_type(string: str) -> str:
+    "Check replay file format."
+    if string == DEFAULT_REPLAY:
+        return string
+    try:
+        with open(string) as f:
+            _ = f.readlines()
+        return string
+    except Exception:
+        raise argparse.ArgumentTypeError(
+            "File provided to `--rank-replay` cannot be read."
+            + " Please run `pytest --help` for instruction."
         )
 
 
@@ -146,6 +176,7 @@ class RTPRunner:
         self.log = {}
         self.weights = self.parse_rtp_weights()
         self.level = self.parse_rtp_level()
+        self.replay_file = self.parse_replay()
         self.hist_len = self.parse_hist_len()
         self.seed = self.parse_seed()
         self.chgtracker = changeTracker(config)
@@ -172,6 +203,14 @@ class RTPRunner:
             ini_val = self.config.getini("rank_level")
             level = ini_val if ini_val else level
         return level
+
+    def parse_replay(self) -> str:
+        """Get replay file, non-default CLI overrides ini file input."""
+        replay_file = self.config.getoption("--rank-replay")
+        if replay_file == DEFAULT_REPLAY:
+            ini_val = self.config.getini("rank_replay")
+            replay_file = ini_val if ini_val else replay_file
+        return replay_file
 
     def parse_hist_len(self) -> int:
         """Get history length, non-default CLI overrides ini file input."""
@@ -226,14 +265,20 @@ class RTPRunner:
 
         # Get priority score per test, prioritized tests have LOWER scores.
         scores = {}
-        if self.weights == [0, 0, 0]:
-            # Random order.
+        if self.replay_file and os.path.exists(self.replay_file):
+            # Run tests in the order specified in the replay file.
+            with open(self.replay_file) as f:
+                test_list = [x.strip() for x in f.readlines()]
+                scores = {x: i for i, x in enumerate(test_list)}
+        elif self.weights == [0, 0, 0]:
+            # Run tests in random order.
             # Pre-sort so that all workers gets the same order in pytest-xdist.
             # https://pytest-xdist.readthedocs.io/en/stable/known-limitations.html
             items.sort(key=lambda item: item.nodeid)
             random.seed(self.seed)
             scores = {item.nodeid: random.random() for item in items}
         else:
+            # Prioritize by test features.
             w_time, w_fail, w_rel = self.weights
             h_time = self.load_feature("last_durations", items, True)
             h_fail = self.load_feature("num_runs_since_fail", items, True)
@@ -249,7 +294,7 @@ class RTPRunner:
 
         rank = get_ranking(scores, self.level, default_order)
 
-        # Handle tests with declared order dependency (OD).
+        # Respect tests with declared order dependency (OD).
         od_items: list[Item] = []
         nod_items: list[Item] = []
         for item in items:
@@ -287,6 +332,7 @@ class RTPRunner:
         if not self.config.getoption("--rank"):
             return None
         weight = self.config.getoption("--rank-weight")
+        replay = self.config.getoption("--rank-replay")
         level = self.config.getoption("--rank-level")
         hist_len = self.config.getoption("--rank-hist-len")
         random_seed = self.config.getoption("--rank-seed")
@@ -295,12 +341,17 @@ class RTPRunner:
             f"Using --rank-level={level}",
             f"Using --rank-hist-len={hist_len}",
             f"Using --rank-seed={random_seed}",
+            f"Using --rank-replay={replay}",
         ]
         return "\n".join(report)
 
     @pytest.hookimpl(trylast=True)
     def pytest_collection_modifyitems(self, items: list[Item]) -> None:
         if self.config.getoption("--rank"):
+            if self.replay_file and self.weights == [0, 0, 0]:
+                raise argparse.ArgumentTypeError(
+                    "--rank-replay cannot be used together with random order."
+                )
             self.run_rtp(items)
 
     def pytest_sessionfinish(self, session: Session, exitstatus: int) -> None:

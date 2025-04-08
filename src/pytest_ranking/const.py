@@ -13,6 +13,8 @@ DEFAULT_WEIGHT = "1-0-0"
 # Default seed for running random order.
 DEFAULT_SEED = int(time.time())
 
+DEFAULT_REPLAY = None
+
 
 class LEVEL(str, Enum):
     """The test group level at which the test suites are reordered.

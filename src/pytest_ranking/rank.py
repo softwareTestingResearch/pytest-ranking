@@ -31,9 +31,8 @@ def get_test_group(nodeid: str, level: Enum) -> str:
 
 
 def get_ranking(scores: dict, level: Enum, init_order: dict) -> dict:
-    """
-    scores: a map between test nodeid to its score
-    return ranking of tests by test nodeid
+    """Return ranking of tests by test nodeid.
+        - scores: mapping between test nodeid to its score
     """
     # Get test groups.
     tests = []
