@@ -413,7 +413,7 @@ def test_random_order(mytester):
         test_class_one=test_class_one,
     )
 
-    # run without rtp
+    # Run without RTP.
     args = ["-v"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=4, failed=2)
@@ -430,51 +430,49 @@ def test_random_order(mytester):
     )
     assert len([x for x in out.outlines if x.startswith(log_text)]) == 0
 
-    # run with default rtp
+    # Run default.
     args = ["-v", "--rank"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=4, failed=2)
     # Should log everything.
     assert len([x for x in out.outlines if x.startswith(log_text)]) == 8
 
-    # run with rtp with default seed
+    # Run with default seed (time.time()).
     args = ["-v", "--rank", "--rank-weight=0-0-0"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=4, failed=2)
     log_text = (
-        "Using --rank-seed=0",
+        "Using --rank-seed=",
     )
-    # should log feature computation time and rtp ordering time
     assert len([x for x in out.outlines if x.startswith(log_text)]) == 1
-    test_lines_with_seed_0 = [x for x in out.outlines if "::" in x]
+    test_lines_default1 = [x for x in out.outlines if "::" in x]
 
-    # run with rtp with default seed
-    args = ["-v", "--rank", "--rank-weight=0.0-0.0-0.0"]
+    # Run with specific seed.
+    args = ["-v", "--rank", "--rank-weight=0.0-0.0-0.0", "--rank-seed=0"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=4, failed=2)
     log_text = (
         "Using --rank-seed=0",
     )
-    # should log feature computation time and rtp ordering time
     assert len([x for x in out.outlines if x.startswith(log_text)]) == 1
+    test_lines_0 = [x for x in out.outlines if "::" in x]
 
-    # run with rtp with specific seed
+    # Run with specific seed.
     args = ["-v", "--rank", "--rank-weight=0-0-0", "--rank-seed=1234"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=4, failed=2)
     log_text = (
         "Using --rank-seed=1234",
     )
-    # should log feature computation time and rtp ordering time
     assert len([x for x in out.outlines if x.startswith(log_text)]) == 1
-    test_lines_with_seed_1234 = [x for x in out.outlines if "::" in x]
+    test_lines_1234 = [x for x in out.outlines if "::" in x]
 
-    # assert test order differ by two seeds
-    assert test_lines_with_seed_0 != test_lines_with_seed_1234
+    # Assert test order differ by three different seeds.
+    assert test_lines_default1 != test_lines_0 != test_lines_1234
 
 
 def test_xdist(mytester):
-    """Test the plugin under pytest-xdist (test parallel)"""
+    """Test the plugin under pytest-xdist (test parallel)."""
     mytester.makepyfile(
         test_put_one=test_put_one,
     )
