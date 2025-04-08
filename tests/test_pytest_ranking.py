@@ -65,7 +65,7 @@ test_put_one = \
     """
     import pytest
 
-    @pytest.mark.parametrize("param", {"a", "b", "c", "d"})
+    @pytest.mark.parametrize("param", ["a", "b", "c", "d"])
     def test_put_unordered(param):
         pass
 
