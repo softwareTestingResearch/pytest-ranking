@@ -22,8 +22,8 @@ setup(
     maintainer_email='testingresearch4all@gmail.com',
     license='MIT',
     url='https://github.com/softwareTestingResearch/pytest-ranking',
-    description='A Pytest plugin for automatically'
-        + ' prioritizing/ranking tests to speed up failure detection',
+    description='A Pytest plugin for faster fault detection'
+        + ' via regression test prioritization',
     long_description=read('README.md'),
     long_description_content_type='text/markdown',
     packages=find_packages('src'),
