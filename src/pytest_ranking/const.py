@@ -1,4 +1,3 @@
-import time
 from enum import Enum
 
 # ------ Constants ------
@@ -10,8 +9,7 @@ DEFAULT_HIST_LEN = 50
 
 DEFAULT_WEIGHT = "1-0-0"
 
-# Default seed for running random order.
-DEFAULT_SEED = int(time.time())
+DEFAULT_SEED = 0
 
 DEFAULT_REPLAY = None
 

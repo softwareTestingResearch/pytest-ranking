@@ -65,7 +65,7 @@ test_put_one = \
     """
     import pytest
 
-    @pytest.mark.parametrize("param", ["a", "b", "c", "d"])
+    @pytest.mark.parametrize("param", {"a", "b", "c", "d"})
     def test_put_unordered(param):
         pass
 
@@ -436,7 +436,7 @@ def test_random_order(mytester):
     # Should log everything.
     assert len([x for x in out.outlines if x.startswith(log_text)]) == 8
 
-    # Run with default seed (time.time()).
+    # Run with default seed.
     args = ["-v", "--rank", "--rank-weight=0-0-0"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=4, failed=2)
@@ -447,27 +447,27 @@ def test_random_order(mytester):
     test_lines_default1 = [x for x in out.outlines if "::" in x]
 
     # Run with specific seed.
-    args = ["-v", "--rank", "--rank-weight=0.0-0.0-0.0", "--rank-seed=0"]
+    args = ["-v", "--rank", "--rank-weight=0.0-0.0-0.0", "--rank-seed=8"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=4, failed=2)
     log_text = (
-        "Using --rank-seed=0",
+        "Using --rank-seed=8",
     )
     assert len([x for x in out.outlines if x.startswith(log_text)]) == 1
-    test_lines_0 = [x for x in out.outlines if "::" in x]
+    test_lines_1 = [x for x in out.outlines if "::" in x]
 
     # Run with specific seed.
-    args = ["-v", "--rank", "--rank-weight=0-0-0", "--rank-seed=1234"]
+    args = ["-v", "--rank", "--rank-weight=0-0-0", "--rank-seed=16"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=4, failed=2)
     log_text = (
-        "Using --rank-seed=1234",
+        "Using --rank-seed=16",
     )
     assert len([x for x in out.outlines if x.startswith(log_text)]) == 1
-    test_lines_1234 = [x for x in out.outlines if "::" in x]
+    test_lines_2 = [x for x in out.outlines if "::" in x]
 
     # Assert test order differ by three different seeds.
-    assert test_lines_default1 != test_lines_0 != test_lines_1234
+    assert test_lines_default1 != test_lines_1 != test_lines_2
 
 
 def test_xdist(mytester):

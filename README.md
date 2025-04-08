@@ -119,7 +119,7 @@ For example, the command below runs tests randomly with seed `1234`:
 pytest --rank --rank-weight=0-0-0 --rank-seed=1234
 ```
 
-By default, `pytest-ranking` uses `time.time()` as seed.
+By default, `pytest-ranking` uses `0` as the seed.
 
 ### Setting configurable options via config file
 

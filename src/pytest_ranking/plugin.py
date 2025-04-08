@@ -44,7 +44,7 @@ Default value is 50 (must be integer).
 SEED_HELP = textwrap.dedent("""\
 Seed when running tests in random order.
 You can run random order via setting `--rank-weight=0-0-0`
-Default value is time.time().
+Default value is 0.
 """)
 
 LEVEL_HELP = textwrap.dedent("""
@@ -252,7 +252,7 @@ class RTPRunner:
     def run_rtp(self, items: list[Item]) -> None:
         """Run test prioritization algorithm."""
         # Get pytest default order.
-        default_order = {item.nodeid: i for i, item in enumerate(items)}
+        init_order = {item.nodeid: i for i, item in enumerate(items)}
         # Load code change features.
         self.chgtracker.compute_test_suite_similarity(items)
         num_delta_file = self.chgtracker.num_delta_files
@@ -292,7 +292,7 @@ class RTPRunner:
 
             scores = {item.nodeid: hybrid(i) for i, item in enumerate(items)}
 
-        rank = get_ranking(scores, self.level, default_order)
+        rank = get_ranking(scores, self.level, init_order)
 
         # Respect tests with declared order dependency (OD).
         od_items: list[Item] = []
@@ -310,7 +310,7 @@ class RTPRunner:
         # Only reorder tests with no declared OD.
         nod_items.sort(
             key=lambda item: (
-                rank.get(item.nodeid, 0), default_order[item.nodeid]
+                rank.get(item.nodeid, 0), init_order[item.nodeid]
             )
         )
         # Run OD tests first.
