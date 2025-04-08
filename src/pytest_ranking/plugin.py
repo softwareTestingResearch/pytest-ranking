@@ -197,6 +197,7 @@ class TCPRunner:
         if rand_seed == DEFAULT_SEED:
             ini_val = self.config.getini("rank_seed")
             rand_seed = ini_val if ini_val else rand_seed
+        self.log["seed if using random order"] = rand_seed
         return int(rand_seed)
 
     def load_feature_data(
@@ -243,7 +244,6 @@ class TCPRunner:
             # randomly order with seed so that all workers have the same order
             random.seed(self.seed)
             scores = {item.nodeid: random.random() for item in items}
-            self.log["random test order with seed"] = self.seed
         else:
             w_time, w_fail, w_rel = self.weights
             h_time = self.load_feature_data("last_durations", items, True)

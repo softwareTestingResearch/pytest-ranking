@@ -77,3 +77,11 @@ cachedir: .tox/TOX_ENV_NAME/.pytest_cache
 ```
 
 The `cachedir` is what we are looking for. In this example, we need to replace `path: ${{ github.workspace }}/.pytest_cache/v/pytest_ranking_data` into `path: ${{ github.workspace }}/.tox/TOX_ENV_NAME/v/pytest_ranking_data` in both the `restore` and `save` cache jobs above in the workflow file.
+
+#### Alternative to `actions/cache`
+
+[`actions/cache`](https://github.com/actions/cache) is one way to allow data from a previous GutHub Actions CI build to be used in the future build.
+One limitation of `actions/cache` is that its cache has a retention period and the total size of all caches for a repository is limited ([reference](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/caching-dependencies-to-speed-up-workflows#usage-limits-and-eviction-policy)).
+
+
+One can also setup a more stable cache storage, e.g., a remote server, and use other GitHub actions to transfer cache data from/to a specific destination. Example actions are [`scp-action`](https://github.com/appleboy/scp-action) and [`copy-via-ssh`](https://github.com/marketplace/actions/copy-via-ssh)

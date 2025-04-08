@@ -107,6 +107,10 @@ rank_hist_len=30
 and run `pytest --rank` on the command line.
 
 
+### Deployment
+
+`pytest-ranking` is easy to deploy to CI workflow, please see [deployment](./docs/DEPLOYMENT.md).
+
 
 ### Compatibility
 
