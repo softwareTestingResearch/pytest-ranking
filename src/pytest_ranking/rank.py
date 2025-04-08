@@ -48,9 +48,11 @@ def get_ranking(scores: dict, level: Enum, init_order: dict) -> dict:
         group: np.mean(score_list)
         for group, score_list in group_scores.items()
     }
-    # Sort tests by its aggregated group score,
-    # break tie by default order.
-    tests.sort(key=lambda x: (agg_group_scores[x[2]], init_order[x[0]]))
+    # Sort tests by its aggregated group score.
+    # Break tie by default order.
+    tests.sort(
+        key=lambda x: (agg_group_scores[x[2]], init_order[x[0]]),
+    )
     return {
         nodeid: rank
         for rank, (nodeid, score, group) in enumerate(tests)
