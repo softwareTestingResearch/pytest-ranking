@@ -1,22 +1,29 @@
 
 # Changelog
 
+0.3.3 (2024-04-08)
+----
+
+* Add replay option
+* Refine random order and test group level
+* Code refactoring
+
 0.3.3 (2024-12-24)
 ----
 
-* order dependency
+* Support order dependency
 
 0.3.2 (2024-12-23)
 ----
 
-* refine test group level definition and extraction
-* use pytest test discovery order as default
+* Refine test group level definition and extraction
+* Use pytest test discovery order as default
 
 0.3.1 (2024-06-06)
 ----
 
-* support ranking tests at different granularity levels (PUT, method, file, folder)
-* add plugin summary via pytest_terminal_summary
+* Support ranking tests at different granularity levels (PUT, method, file, folder)
+* Add plugin summary via pytest_terminal_summary
 
 0.3.0 (2024-05-12)
 ----
