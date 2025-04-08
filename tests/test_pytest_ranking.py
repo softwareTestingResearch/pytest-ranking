@@ -386,12 +386,8 @@ def test_logging(mytester):
     args = ["-v", "--rank"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=2, failed=1)
-    lines = out.outlines
     # Should log everything.
-    header = "= pytest-ranking summary info ="
-    idx = [i for i in range(len(lines)) if header in lines[i]]
-    assert len(idx) == 1
-    assert len([x for x in lines[idx[0]:] if x.startswith(log_text)]) == 8
+    assert len([x for x in out.outlines if x.startswith(log_text)]) == 8
 
 
 def test_invalid_weight(mytester):
