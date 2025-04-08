@@ -17,11 +17,12 @@ DEFAULT_SEED = int(time.time())
 class LEVEL(str, Enum):
     """The test group level at which the test suites are reordered.
     Tests within each group follows the pytest default order.
+    https://docs.pytest.org/en/stable/reference/fixtures.html#fixtures
     """
-    PARAM = "param"
-    METHOD = "method"
-    FILE = "file"
-    FOLDER = "folder"
+    PUT = "put"
+    FUNCTION = "function"
+    MODULE = "module"
+    DIR = "dir"
 
 
-DEFAULT_LEVEL = LEVEL.PARAM
+DEFAULT_LEVEL = LEVEL.PUT

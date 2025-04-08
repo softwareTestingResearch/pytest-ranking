@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import os
 import random
+import textwrap
 import time
 from enum import Enum
 
@@ -20,36 +21,38 @@ from .const import (DATA_DIR, DEFAULT_HIST_LEN, DEFAULT_LEVEL, DEFAULT_SEED,
                     DEFAULT_WEIGHT, LEVEL)
 from .rank import get_ranking
 
-PLUGIN_HELP = "Run regression test prioritization for pytest test suite. "\
-    "It re-orders execution of tests to expose test failure sooner. "\
-    "Default behavior: runs faster tests first, "\
-    "so that more tests are executed per unit time. "\
-    "Please see details in the `--rank-weight` option."
+PLUGIN_HELP = """\
+Run regression test prioritization for pytest test suite.
+It re-orders execution of tests to expose test failure sooner.
+"""
 
-WEIGHT_HELP = "Weights to different prioritization heuristics, "\
-    "separated by hyphens `-`."\
-    "The first weight (w1) is for running faster tests, "\
-    "the second weight (w2) is for running recently failed tests, "\
-    "the third weight (w3) is for tests more similar to changed files. "\
-    "The sum of weights will be normalized to 1. "\
-    "Higher weight means that heuristic will be favored. "\
-    "Input format: `w1-w2-w3`. Default value: 1-0-0, meaning it "\
-    "runs faster tests."
 
-HIST_LEN_HELP = "History length, the maximum number of previous test runs "\
-    "that can be recorded for a test since the test has failed. "\
-    "Default is 50 (must be integer)."
+WEIGHT_HELP = """\
+Set weights on different prioritization heuristics,
+separated by hyphens `-`.
+The sum of weights will be normalized to 1.
+Higher weight means that heuristic will be favored.
+Default value is 1-0-0.
+"""
 
-SEED_HELP = "Seed when running tests in random order, e.g., "\
-    "You can run random order by passing option `--rank-weight=0-0-0` "\
-    "Default is time.time()."
+HIST_LEN_HELP = """\
+The maximum number of previous test runs
+that can be recorded for a test since the test has failed.
+Default value is 50 (must be integer).
+"""
 
-LEVEL_HELP = "The level at which the tests are ordered."\
-    "Test items below the configured level are ordered by "\
-    "default order (alphabetical). For example, with `--rank-level=file`, "\
-    "test methods within a test file are in default order, "\
-    "but each test file are ordered based on the configured --rank-weight, "\
-    "score of a test file is the mean score over all tests in that file."
+SEED_HELP = """\
+Seed when running tests in random order.
+You can run random order via setting `--rank-weight=0-0-0`
+Default value is time.time().
+"""
+
+LEVEL_HELP = """
+The test group level at which the prioritization takes place.
+Test items below the configured level follow pytest default order.
+Score of a test group is the mean score over all tests in that group.
+Default value is PUT.
+"""
 
 
 def pytest_addoption(parser: Parser) -> None:
@@ -57,7 +60,7 @@ def pytest_addoption(parser: Parser) -> None:
     group._addoption(
         "--rank",
         action="store_true",
-        help=PLUGIN_HELP)
+        help=textwrap.dedent(PLUGIN_HELP))
 
     group._addoption(
         "--rank-level",
@@ -65,7 +68,7 @@ def pytest_addoption(parser: Parser) -> None:
         type=level_type,
         default=DEFAULT_LEVEL,
         dest="rank_level",
-        help=LEVEL_HELP)
+        help=textwrap.dedent(LEVEL_HELP))
 
     group._addoption(
         "--rank-weight",
@@ -73,7 +76,7 @@ def pytest_addoption(parser: Parser) -> None:
         type=weight_type,
         default=DEFAULT_WEIGHT,
         dest="rank_weight",
-        help=WEIGHT_HELP)
+        help=textwrap.dedent(WEIGHT_HELP))
 
     group._addoption(
         "--rank-hist-len",
@@ -81,7 +84,7 @@ def pytest_addoption(parser: Parser) -> None:
         type=int,
         dest="rank_hist_len",
         default=DEFAULT_HIST_LEN,
-        help=HIST_LEN_HELP)
+        help=textwrap.dedent(HIST_LEN_HELP))
 
     group._addoption(
         "--rank-seed",
@@ -89,7 +92,7 @@ def pytest_addoption(parser: Parser) -> None:
         type=int,
         dest="rank_seed",
         default=DEFAULT_SEED,
-        help=SEED_HELP)
+        help=textwrap.dedent(SEED_HELP))
 
     parser.addini("rank_weight", WEIGHT_HELP, default=DEFAULT_WEIGHT)
     parser.addini("rank_level", LEVEL_HELP, default=DEFAULT_LEVEL)

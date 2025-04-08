@@ -95,12 +95,12 @@ def test_default(mytester):
         test_class_one=test_class_one,
     )
 
-    # run without rtp
+    # Run without RTP.
     args = ["-v"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=4, failed=2)
 
-    # run with rtp
+    # Run with RTP.
     args = ["-v", "--rank"]
     out = mytester.runpytest(*args)
 
@@ -127,12 +127,12 @@ def test_faster_test_first(mytester):
         test_class_one=test_class_one,
     )
 
-    # run without rtp
+    # Run without RTP.
     args = ["-v"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=4, failed=2)
 
-    # run with rtp
+    # Run with RTP.
     args = ["-v", "--rank", "--rank-weight=1-0-0"]
     out = mytester.runpytest(*args)
 
@@ -159,12 +159,12 @@ def test_recent_fail_first(mytester):
         test_class_one=test_class_one,
     )
 
-    # run without rtp
+    # Run without RTP.
     args = ["-v"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=4, failed=2)
 
-    # run with rtp
+    # Run with RTP.
     args = ["-v", "--rank", "--rank-weight=0-1-0"]
     out = mytester.runpytest(*args)
 
@@ -191,12 +191,12 @@ def test_550_weight(mytester):
         test_class_one=test_class_one,
     )
 
-    # run without rtp
+    # Run without RTP.
     args = ["-v"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=4, failed=2)
 
-    # run with rtp
+    # Run with RTP.
     args = ["-v", "--rank", "--rank-weight=5-5-0"]
     out = mytester.runpytest(*args)
 
@@ -223,12 +223,12 @@ def test_001_028_weight(mytester):
         test_class_one=test_class_one,
     )
 
-    # run without rtp
+    # Run without RTP.
     args = ["-v"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=4, failed=2)
 
-    # run with rtp
+    # Run with RTP.
     args = ["-v", "--rank"]
     out = mytester.runpytest(*args)
 
@@ -247,7 +247,7 @@ def test_001_028_weight(mytester):
     )
 
     mytester.makepyfile(source_method_one=source_method_one)
-    # run with rtp
+    # Run with RTP.
     args = ["-v", "--rank", "--rank-weight=0-0-1"]
     out = mytester.runpytest(*args)
 
@@ -267,7 +267,7 @@ def test_001_028_weight(mytester):
     )
 
     mytester.makepyfile(source_class_one=source_class_one)
-    # run with rtp
+    # Run with RTP.
     args = ["-v", "--rank", "--rank-weight=0-2-8"]
     out = mytester.runpytest(*args)
 
@@ -293,12 +293,12 @@ def test_208_093_weight(mytester):
         test_class_one=test_class_one,
     )
 
-    # run without rtp
+    # Run without RTP.
     args = ["-v"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=4, failed=2)
 
-    # run with rtp
+    # Run with RTP.
     args = ["-v", "--rank"]
     out = mytester.runpytest(*args)
 
@@ -318,7 +318,7 @@ def test_208_093_weight(mytester):
     )
 
     mytester.makepyfile(source_method_one=source_method_one)
-    # run with rtp
+    # Run with RTP.
     args = ["-v", "--rank", "--rank-weight=.2-0-.8"]
     out = mytester.runpytest(*args)
 
@@ -338,7 +338,7 @@ def test_208_093_weight(mytester):
     )
 
     mytester.makepyfile(source_class_one=source_class_one)
-    # run with rtp
+    # Run with RTP.
     args = ["-v", "--rank", "--rank-weight=0-9-3"]
     out = mytester.runpytest(*args)
 
@@ -362,7 +362,7 @@ def test_logging(mytester):
         test_method_one=test_method_one
     )
 
-    # run without rtp
+    # Without RTP.
     args = ["-v"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=2, failed=1)
@@ -382,7 +382,7 @@ def test_logging(mytester):
     assert len([x for x in out.outlines if header in x]) == 0
     assert len([x for x in out.outlines if x.startswith(log_text)]) == 0
 
-    # run with rtp
+    # Run with RTP.
     args = ["-v", "--rank"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=2, failed=1)
@@ -558,25 +558,25 @@ test_c_put_ordered = \
     """
 
 
-def test_param_level_ranking(mytester):
+def test_put_level_ranking(mytester):
     mytester.makepyfile(
         test_a_method=test_a_method,
         test_b_class=test_b_class,
         test_c_put=test_c_put,
     )
 
-    # run without rtp
+    # Without RTP.
     args = ["-v"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=13, failed=2)
 
-    # run with rtp
-    args = ["-v", "--rank", "--rank-level=param"]
+    # With RTP.
+    args = ["-v", "--rank", "--rank-level=put"]
     out = mytester.runpytest(*args)
 
-    # assert outcome to be the same as if no rtp
+    # Assert outcome to be the same as if no RTP.
     out.assert_outcomes(passed=13, failed=2)
-    # assert faster tests are run first at param level
+    # Assert faster tests are run first at PUT level.
     out.stdout.fnmatch_lines(
         [
             "test_c_put.py::test_a_put_unordered[0.1] PASSED",
@@ -600,23 +600,23 @@ def test_param_level_ranking(mytester):
     pass
 
 
-def test_method_level_ranking(mytester):
+def test_function_level_ranking(mytester):
     mytester.makepyfile(
         test_a_method=test_a_method,
         test_b_class=test_b_class,
         test_c_put=test_c_put_ordered,
     )
 
-    # run without rtp
+    # Run without RTP.
     args = ["-v"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=9, failed=2)
 
-    # run with rtp
-    args = ["-v", "--rank", "--rank-level=method"]
+    # Run with RTP.
+    args = ["-v", "--rank", "--rank-level=function"]
     out = mytester.runpytest(*args)
 
-    # assert outcome to be the same as if no rtp
+    # Assert outcome to be the same as if no RTP.
     out.assert_outcomes(passed=9, failed=2)
     out.stdout.fnmatch_lines(
         [
@@ -637,20 +637,20 @@ def test_method_level_ranking(mytester):
     pass
 
 
-def test_file_level_ranking(mytester):
+def test_module_level_ranking(mytester):
     mytester.makepyfile(
         test_a_method=test_a_method,
         test_b_class=test_b_class,
         test_c_put=test_c_put_ordered,
     )
 
-    # run without rtp
+    # Run without RTP.
     args = ["-v"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=9, failed=2)
 
-    # run with rtp
-    args = ["-v", "--rank", "--rank-level=file"]
+    # Run with RTP.
+    args = ["-v", "--rank", "--rank-level=module"]
     out = mytester.runpytest(*args)
 
     # assert outcome to be the same as if no rtp
@@ -674,7 +674,7 @@ def test_file_level_ranking(mytester):
     pass
 
 
-def test_folder_level_ranking(mytester):
+def test_dir_level_ranking(mytester):
 
     a = mytester.mkdir("a")
     a.joinpath("test_a_method.py").write_text(
@@ -685,16 +685,16 @@ def test_folder_level_ranking(mytester):
     b.joinpath("test_c_put.py").write_text(
         textwrap.dedent(test_c_put_ordered))
 
-    # run without rtp
+    # Without RTP.
     args = ["-v"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=9, failed=2)
 
-    # run with rtp
-    args = ["-v", "--rank", "--rank-level=file"]
+    # With RTP.
+    args = ["-v", "--rank", "--rank-level=dir"]
     out = mytester.runpytest(*args)
 
-    # assert outcome to be the same as if no rtp
+    # Assert outcome.
     out.assert_outcomes(passed=9, failed=2)
     out.stdout.fnmatch_lines(
         [
@@ -752,7 +752,7 @@ test_a_method_two = \
     """
 
 
-def test_method_level_ranking_with_duplicate_methods(mytester):
+def test_function_level_ranking_with_duplicate_methods(mytester):
     mytester.makepyfile(
         test_a_method=test_a_method,
         test_a_method_two=test_a_method_two,
@@ -760,20 +760,20 @@ def test_method_level_ranking_with_duplicate_methods(mytester):
         test_c_put=test_c_put_ordered,
     )
 
-    # run without rtp
+    # Without RTP.
     args = ["-v"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=11, failed=3)
 
-    # run with rtp
-    args = ["-v", "--rank", "--rank-level=method"]
+    # With RTP.
+    args = ["-v", "--rank", "--rank-level=function"]
     out = mytester.runpytest(*args)
 
-    # assert outcome to be the same as if no rtp
+    # Assert outcome to be the same with/without RTP.
     out.assert_outcomes(passed=11, failed=3)
-    # assert that tests with the same method name,
-    # i.e., from test_a_method and test_a_method_two
-    # are in two different group
+    # Assert that tests with the same method name,
+    # i.e., from test_a_method and test_a_method_two,
+    # are in two different group.
     out.stdout.fnmatch_lines(
         [
             "test_a_method_two.py::test_b_fast_fail FAILED",
@@ -851,12 +851,12 @@ def test_order_dependency_marker(mytester):
         test_dependency=test_dependency,
     )
 
-    # run without rtp
+    # Run without RTP.
     args = ["-v"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=8, failed=1, xfailed=1)
 
-    # run with rtp
+    # Run with RTP.
     args = ["-v", "--rank"]
     out = mytester.runpytest(*args)
 
