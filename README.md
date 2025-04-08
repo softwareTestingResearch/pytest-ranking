@@ -54,12 +54,12 @@ You can set the weights of different test prioritization heuristics by passing t
 pytest --rank --rank-weight=0-1-0
 ```
 
-- Weights are separated by ``-``.
+- Weights are separated by ``-``
     - The first weight is for running faster tests
     - The second weight is for running recently failed tests
-    - The third weight is for running tests more similar to the changed `*.py` files since the last run.
-- All weights must be integers or floats, and their sum will be normalized to 1.
-- A higher weight means that a corresponding heuristic is favored. The default value is ``1-0-0``, which only prioritizes faster tests.
+    - The third weight is for running tests more similar to the changed `*.py` files since the last run
+- All weights must be integers or floats, and their sum will be normalized to 1
+- A higher weight means that a corresponding heuristic is favored. The default value is ``1-0-0``, which only prioritizes faster tests
 
 
 ### Optimizing test prioritization levels
@@ -70,12 +70,12 @@ You can set at which level of your test suite will be reordered, by passing the 
 pytest --rank --rank-level=function
 ```
 
-- The smallest test item that can be reordered in pytest test suite is [parametrized unit test](https://docs.pytest.org/en/7.1.x/example/parametrize.html) (PUT).
+- The smallest test item that can be reordered in pytest test suite is [parametrized unit test](https://docs.pytest.org/en/7.1.x/example/parametrize.html) (PUT)
 - This option allows you to set at which level the reordering takes place:
     - `put` reorders the each PUT and re-arranges their order based on their assigned priority scores
     - `function` reorders each test function, parametrized values of a test function follow their default order
     - `module` reorders each test file, all tests in the test file follow their default order
-    - `dir` reorders each test directory, all tests within each directory follow their default order.
+    - `dir` reorders each test directory, all tests within each directory follow their default order
 
 
 ### Tracking heuristics from historical runs
@@ -137,7 +137,7 @@ Pytest options that order tests generally (e.g., [`--ff`](https://docs.pytest.or
 ## Reference
 
 #### Demo video
-A 5-minute demo video with walkthrough of `pytest-ranking`: [youtube](https://youtu.be/SrnkgTs3uok?feature=shared)
+A 5-minute demo video with walkthrough of `pytest-ranking`: [YouTube link](https://youtu.be/SrnkgTs3uok?feature=shared)
 
 #### Bibtex citation
 ```
