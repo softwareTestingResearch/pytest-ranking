@@ -368,13 +368,14 @@ def test_logging(mytester):
     out.assert_outcomes(passed=2, failed=1)
     # should only log feature computation time
     log_text = (
-        "weights: ",
-        "level: ",
-        "look-back history length",
-        "number of *.py src files with new hashes",
-        "test-change similarity compute time (s)",
-        "test order compute time (s)",
-        "feature collection time (s)",
+        "Using --rank-weight",
+        "Using --rank-level",
+        "Using --rank-hist-len",
+        "Using --rank-seed",
+        "Number of changed Python files",
+        "Time to compute test-change similarity (s)",
+        "Time to reorder tests (s)",
+        "Time to collect test features (s)",
     )
 
     header = "= pytest-ranking summary info ="
@@ -422,14 +423,14 @@ def test_random_order(mytester):
     out.assert_outcomes(passed=4, failed=2)
     # should only log feature computation time
     log_text = (
-        "weights: ",
-        "level: ",
-        "random order seed",
-        "look-back history length",
-        "number of *.py src files with new hashes",
-        "test-change similarity compute time (s)",
-        "test order compute time (s)",
-        "feature collection time (s)",
+        "Using --rank-weight",
+        "Using --rank-level",
+        "Using --rank-hist-len",
+        "Using --rank-seed",
+        "Number of changed Python files",
+        "Time to compute test-change similarity (s)",
+        "Time to reorder tests (s)",
+        "Time to collect test features (s)",
     )
     assert len([x for x in out.outlines if x.startswith(log_text)]) == 0
 
@@ -445,7 +446,7 @@ def test_random_order(mytester):
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=4, failed=2)
     log_text = (
-        "random order seed: 0",
+        "Using --rank-seed=0",
     )
     # should log feature computation time and rtp ordering time
     assert len([x for x in out.outlines if x.startswith(log_text)]) == 1
@@ -456,7 +457,7 @@ def test_random_order(mytester):
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=4, failed=2)
     log_text = (
-        "random order seed: 0",
+        "Using --rank-seed=0",
     )
     # should log feature computation time and rtp ordering time
     assert len([x for x in out.outlines if x.startswith(log_text)]) == 1
@@ -466,7 +467,7 @@ def test_random_order(mytester):
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=4, failed=2)
     log_text = (
-        "random order seed: 1234",
+        "Using --rank-seed=1234",
     )
     # should log feature computation time and rtp ordering time
     assert len([x for x in out.outlines if x.startswith(log_text)]) == 1

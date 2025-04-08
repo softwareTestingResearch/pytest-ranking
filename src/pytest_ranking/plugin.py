@@ -154,7 +154,6 @@ class RTPRunner:
         if weights == DEFAULT_WEIGHT:
             ini_val = self.config.getini("rank_weight")
             weights = ini_val if ini_val else weights
-        self.log['weights'] = weights
 
         weights = weights.split("-")
         weights = [float(w) for w in weights]
@@ -170,7 +169,6 @@ class RTPRunner:
         if level == DEFAULT_LEVEL:
             ini_val = self.config.getini("rank_level")
             level = ini_val if ini_val else level
-        self.log['level'] = level
         return level
 
     def parse_hist_len(self) -> int:
@@ -180,7 +178,6 @@ class RTPRunner:
         if hist_len == DEFAULT_HIST_LEN:
             ini_val = self.config.getini("rank_hist_len")
             hist_len = ini_val if ini_val else hist_len
-        self.log['look-back history length'] = hist_len
         return int(hist_len)
 
     def parse_seed(self) -> int:
@@ -189,7 +186,6 @@ class RTPRunner:
         if rand_seed == DEFAULT_SEED:
             ini_val = self.config.getini("rank_seed")
             rand_seed = ini_val if ini_val else rand_seed
-        self.log["random order seed"] = rand_seed
         return int(rand_seed)
 
     def load_feature_data(
@@ -221,8 +217,8 @@ class RTPRunner:
         self.chgtracker.compute_test_suite_relatedness(items)
         num_delta_file = self.chgtracker.num_delta_files
         compute_time = self.chgtracker.overhead
-        self.log['number of *.py src files with new hashes'] = num_delta_file
-        self.log['test-change similarity compute time (s)'] = compute_time
+        self.log["Number of changed Python files"] = num_delta_file
+        self.log["Time to compute test-change similarity (s)"] = compute_time
 
         # start ordering tests
         start_time = time.time()
@@ -275,7 +271,7 @@ class RTPRunner:
         items[:] = od_items + nod_items
 
         # log time to compute test order
-        self.log["test order compute time (s)"] = time.time() - start_time
+        self.log["Time to reorder tests (s)"] = time.time() - start_time
 
     def pytest_runtest_logreport(self, report: TestReport) -> None:
         """Record test result of each executed test"""
@@ -283,6 +279,20 @@ class RTPRunner:
             # no skipped: only look at the executed test
             # call: only look at called duration (ignore setup/teardown)
             self.test_reports.append(report)
+
+    def pytest_report_header(self, config: Config) -> str:
+        """Report plugin configurations before test session starts."""
+        weight = self.config.getoption("--rank-weight")
+        level = self.config.getoption("--rank-level")
+        hist_len = self.config.getoption("--rank-hist-len")
+        random_seed = self.config.getoption("--rank-seed")
+        report = [
+            f"Using --rank-weight={weight}",
+            f"Using --rank-level={level}",
+            f"Using --rank-hist-len={hist_len}",
+            f"Using --rank-seed={random_seed}",
+        ]
+        return "\n".join(report)
 
     @pytest.hookimpl(trylast=True)
     def pytest_collection_modifyitems(self, items: list[Item]) -> None:
@@ -293,7 +303,9 @@ class RTPRunner:
         start_time = time.time()
         compute_test_features(self.config, self.test_reports, self.hist_len)
         # log time for collecting features
-        self.log["feature collection time (s)"] = time.time() - start_time
+        self.log["Time to collect test features (s)"] = (
+            time.time() - start_time
+        )
 
     def pytest_terminal_summary(
             self, terminalreporter: TerminalReporter,
