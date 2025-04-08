@@ -128,14 +128,6 @@ def level_type(string: str) -> str:
         )
 
 
-def z_score_normalization(array: list[float], reverse: bool) -> list[float]:
-    array = np.array(array)
-    array = (array - np.mean(array)) / np.std(array)
-    if reverse:
-        array = - array
-    return array.tolist()
-
-
 def min_max_normalization(x: list[float]) -> np.ndarray:
     x = np.array(x)
     x_range = (np.max(x) - np.min(x))
