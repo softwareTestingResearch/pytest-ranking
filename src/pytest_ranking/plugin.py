@@ -282,6 +282,9 @@ class RTPRunner:
 
     def pytest_report_header(self, config: Config) -> str:
         """Report plugin configurations before test session starts."""
+        # Report nothing if the plugin is not enabled
+        if not self.config.getoption("--rank"):
+            return None
         weight = self.config.getoption("--rank-weight")
         level = self.config.getoption("--rank-level")
         hist_len = self.config.getoption("--rank-hist-len")

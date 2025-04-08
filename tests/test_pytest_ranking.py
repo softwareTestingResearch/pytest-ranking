@@ -366,7 +366,7 @@ def test_logging(mytester):
     args = ["-v"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=2, failed=1)
-    # should only log feature computation time
+    # Should print nothing.
     log_text = (
         "Using --rank-weight",
         "Using --rank-level",
@@ -387,11 +387,11 @@ def test_logging(mytester):
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=2, failed=1)
     lines = out.outlines
-    # check log text exists in plugin summary info
+    # Should log everything.
     header = "= pytest-ranking summary info ="
     idx = [i for i in range(len(lines)) if header in lines[i]]
     assert len(idx) == 1
-    assert len([x for x in lines[idx[0]:] if x.startswith(log_text)]) == 7
+    assert len([x for x in lines[idx[0]:] if x.startswith(log_text)]) == 8
 
 
 def test_invalid_weight(mytester):
@@ -421,7 +421,7 @@ def test_random_order(mytester):
     args = ["-v"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=4, failed=2)
-    # should only log feature computation time
+    # Should print nothing.
     log_text = (
         "Using --rank-weight",
         "Using --rank-level",
@@ -438,7 +438,7 @@ def test_random_order(mytester):
     args = ["-v", "--rank"]
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=4, failed=2)
-    # should log feature computation time and rtp ordering time
+    # Should log everything.
     assert len([x for x in out.outlines if x.startswith(log_text)]) == 8
 
     # run with rtp with default seed
