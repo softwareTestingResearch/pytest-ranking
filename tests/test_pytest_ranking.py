@@ -424,7 +424,7 @@ def test_random_order(mytester):
     log_text = (
         "weights: ",
         "level: ",
-        "seed if using random order",
+        "random order seed",
         "look-back history length",
         "number of *.py src files with new hashes",
         "test-change similarity compute time (s)",
@@ -445,7 +445,7 @@ def test_random_order(mytester):
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=4, failed=2)
     log_text = (
-        "seed if using random order: 0",
+        "random order seed: 0",
     )
     # should log feature computation time and tcp ordering time
     assert len([x for x in out.outlines if x.startswith(log_text)]) == 1
@@ -456,7 +456,7 @@ def test_random_order(mytester):
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=4, failed=2)
     log_text = (
-        "seed if using random order: 0",
+        "random order seed: 0",
     )
     # should log feature computation time and tcp ordering time
     assert len([x for x in out.outlines if x.startswith(log_text)]) == 1
@@ -466,7 +466,7 @@ def test_random_order(mytester):
     out = mytester.runpytest(*args)
     out.assert_outcomes(passed=4, failed=2)
     log_text = (
-        "seed if using random order: 1234",
+        "random order seed: 1234",
     )
     # should log feature computation time and tcp ordering time
     assert len([x for x in out.outlines if x.startswith(log_text)]) == 1

@@ -197,7 +197,7 @@ class TCPRunner:
         if rand_seed == DEFAULT_SEED:
             ini_val = self.config.getini("rank_seed")
             rand_seed = ini_val if ini_val else rand_seed
-        self.log["seed if using random order"] = rand_seed
+        self.log["random order seed"] = rand_seed
         return int(rand_seed)
 
     def load_feature_data(
