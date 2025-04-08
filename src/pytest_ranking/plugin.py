@@ -20,31 +20,31 @@ from .const import (DATA_DIR, DEFAULT_HIST_LEN, DEFAULT_LEVEL, DEFAULT_SEED,
                     DEFAULT_WEIGHT, LEVEL)
 from .rank import get_ranking
 
-PLUGIN_HELP = "Run test-case prioritization algorithm for pytest test suite. "\
+PLUGIN_HELP = "Run regression test prioritization for pytest test suite. "\
     "It re-orders execution of tests to expose test failure sooner. "\
     "Default behavior: runs faster tests first, "\
     "so that more tests are executed per unit time. "\
     "Please see details in the `--rank-weight` option."
 
-WEIGHT_HELP = "Weights to different ordering heuristics, "\
+WEIGHT_HELP = "Weights to different prioritization heuristics, "\
     "separated by hyphens `-`."\
-    "The 1st weight (w1) is for running faster tests, "\
-    "the 2nd weight (w2) is for running recently failed tests, "\
-    "the 3rd weight (w3) is for tests more similar to changed files. "\
+    "The first weight (w1) is for running faster tests, "\
+    "the second weight (w2) is for running recently failed tests, "\
+    "the third weight (w3) is for tests more similar to changed files. "\
     "The sum of weights will be normalized to 1. "\
     "Higher weight means that heuristic will be favored. "\
     "Input format: `w1-w2-w3`. Default value: 1-0-0, meaning it "\
     "runs faster tests."
 
-HIST_LEN_HELP = "History length, the number of previous test runs used "\
-    "to track the number of runs since a test has failed. "\
+HIST_LEN_HELP = "History length, the maximum number of previous test runs "\
+    "that can be recorded for a test since the test has failed. "\
     "Default is 50 (must be integer)."
 
 SEED_HELP = "Seed when running tests in random order, e.g., "\
     "You can run random order by passing option `--rank-weight=0-0-0` "\
-    "Default is 1234."
+    "Default is time.time()."
 
-LEVEL_HELP = "The level of granularity at which the tests are ordered."\
+LEVEL_HELP = "The level at which the tests are ordered."\
     "Test items below the configured level are ordered by "\
     "default order (alphabetical). For example, with `--rank-level=file`, "\
     "test methods within a test file are in default order, "\
@@ -143,20 +143,20 @@ def min_max_normalization(x: list[float]) -> np.ndarray:
     return x
 
 
-class TCPRunner:
+class RTPRunner:
     """Plugin class"""
     def __init__(self, config: Config) -> None:
         self.config = config
         self.test_reports = []
         # for logging runtime overhead, etc
         self.log = {}
-        self.weights = self.parse_tcp_weights()
-        self.level = self.parse_tcp_level()
+        self.weights = self.parse_rtp_weights()
+        self.level = self.parse_rtp_level()
         self.hist_len = self.parse_hist_len()
         self.seed = self.parse_seed()
         self.chgtracker = changeTracker(config)
 
-    def parse_tcp_weights(self) -> list[float]:
+    def parse_rtp_weights(self) -> list[float]:
         """Get weights, non-default CLI overrides ini file input"""
         weights = self.config.getoption("--rank-weight")
         if weights == DEFAULT_WEIGHT:
@@ -172,7 +172,7 @@ class TCPRunner:
         weights = [w_i / weight_sum for w_i in weights]
         return weights
 
-    def parse_tcp_level(self) -> Enum:
+    def parse_rtp_level(self) -> Enum:
         """Get granularity level for ordering"""
         level = self.config.getoption("--rank-level")
         if level == DEFAULT_LEVEL:
@@ -221,7 +221,7 @@ class TCPRunner:
             values = 1 - values
         return values.tolist()
 
-    def run_tcp(self, items: list[Item]) -> None:
+    def run_rtp(self, items: list[Item]) -> None:
         """Run test prioritization algorithm"""
         # get initial order from pytest, i.e., by discovery order of the tests
         init_order = {item.nodeid: i for i, item in enumerate(items)}
@@ -286,7 +286,7 @@ class TCPRunner:
         self.log["test order compute time (s)"] = time.time() - start_time
 
     def pytest_runtest_logreport(self, report: TestReport) -> None:
-        """Record test result of each executed test case"""
+        """Record test result of each executed test"""
         if not report.skipped and report.when == "call":
             # no skipped: only look at the executed test
             # call: only look at called duration (ignore setup/teardown)
@@ -295,7 +295,7 @@ class TCPRunner:
     @pytest.hookimpl(trylast=True)
     def pytest_collection_modifyitems(self, items: list[Item]) -> None:
         if self.config.getoption("--rank"):
-            self.run_tcp(items)
+            self.run_rtp(items)
 
     def pytest_sessionfinish(self, session: Session, exitstatus: int) -> None:
         start_time = time.time()
@@ -349,8 +349,8 @@ def compute_test_features(
 def pytest_configure(config: Config) -> None:
     """
     Called when pytest is about to start:
-        - Create a cache folder (if not exist) to store test features for tcp
+        - Create a cache folder (if not exist) to store test features for RTP
         - Register this plugin
     """
-    runner = TCPRunner(config)
+    runner = RTPRunner(config)
     config.pluginmanager.register(runner)
