@@ -42,7 +42,7 @@ Using --rank-replay=None
 ```
 
 
-After the test run finishes, the terminal summary will show the configuration and overhead of `pytest-ranking` in this run, for example:
+After the test run finishes, the terminal summary will show the overhead of `pytest-ranking` in this run, for example:
 
  ```text
 ============================================= pytest-ranking summary info =============================================
