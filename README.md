@@ -107,7 +107,7 @@ pytest --rank --rank-hist-len=30
 ```
 
 The default value is 50.
-Note that `pytest-ranking` does not store any historical test run logs, it merely updated its cached data from the previous run with data from the latest run. 
+Note that `pytest-ranking` does not store any historical test run logs, it merely updated its cached data from the previous run with data from the latest run.
 
 ### Running tests in random order
 
