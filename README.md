@@ -68,7 +68,7 @@ pytest --rank --rank-weight=0-1-0
 - All weights must be integers or floats, and their sum will be normalized to 1
 - A higher weight means that a corresponding heuristic is favored.
 
-The default value is ``1-0-0``, which only prioritizes faster tests
+The default value is ``1-0-0``, which only prioritizes faster tests.
 
 
 ### Optimizing test prioritization levels
@@ -98,7 +98,7 @@ pytest --rank --rank-replay=replay_order.txt
 ```
 
 
-### Tracking heuristics from historical runs
+### Tracking data from historical runs
 
 You can also set the maximum value of *the number test runs since a test's last failure* that could be recorded for each test, by passing the optional `--rank-hist-len` flag:
 
@@ -107,7 +107,7 @@ pytest --rank --rank-hist-len=30
 ```
 
 The default value is 50.
-Note that the plugin does not store any historical run logs, it merely resets cached ranking heuristics after every `rank-hist-len` number of runs.
+Note that `pytest-ranking` does not store any historical test run logs, it merely updated its cached data from the previous run with data from the latest run. 
 
 ### Running tests in random order
 
